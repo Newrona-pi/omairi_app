@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// 画像のインポート
-import toriiImage from './assets/torii.gif';
-import keidaiImage from './assets/keidai.gif';
-import emakakeImage from './assets/emakake.png';
-import emaImage from './assets/ema.png';
-import characterImage from './assets/character.png';
-import minnaNoEmaImage from './assets/minna_no_ema.png';
-import mikoCharacter from './assets/miko-character.png'; // 新しい巫女キャラクター
-
-// 音声ファイルのインポート
-import suzuSound from './assets/神社の鈴を鳴らす.mp3';
-
 const App = () => {
   const [step, setStep] = useState(0); // 0: 初期画面, 1: 鳥居, 2: 境内, 3: 絵馬掛け, 4: 絵馬, 5: みんなの絵馬
   const [wish, setWish] = useState('');
@@ -75,10 +63,10 @@ const App = () => {
         console.error('CSVファイルの読み込みに失敗しました:', error);
         // フォールバック: デフォルトのキャラクター
         setCharacters([
-          { id: 1, name: 'お稲荷様', image_path: characterImage, description: '商売繁盛の神様' },
-          { id: 2, name: '七福神', image_path: characterImage, description: '福を招く神様' },
-          { id: 3, name: '天狗', image_path: characterImage, description: '山の修行者' },
-          { id: 4, name: '狐', image_path: characterImage, description: '稲荷の使い' }
+          { id: 1, name: 'お稲荷様', image_path: 'assets/character.png', description: '商売繁盛の神様' },
+          { id: 2, name: '七福神', image_path: 'assets/character.png', description: '福を招く神様' },
+          { id: 3, name: '天狗', image_path: 'assets/character.png', description: '山の修行者' },
+          { id: 4, name: '狐', image_path: 'assets/character.png', description: '稲荷の使い' }
         ]);
         setLoading(false);
       }
@@ -151,7 +139,7 @@ const App = () => {
       case 0:
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
-            <img src={characterImage} alt="Character" className="fs-img" />
+            <img src="assets/character.png" alt="Character" className="fs-img" />
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <h1 className="text-white text-5xl font-bold animate-pulse">タイトル</h1>
             </div>
@@ -160,7 +148,7 @@ const App = () => {
       case 1:
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleToriiClick}>
-            <img src={toriiImage} alt="Torii" className="fs-img" />
+            <img src="assets/torii.gif" alt="Torii" className="fs-img" />
           </div>
         );
       case 2:
@@ -172,7 +160,7 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <img src={keidaiImage} alt="Keidai" className="fs-img" />
+            <img src="assets/keidai.gif" alt="Keidai" className="fs-img" />
             <div
               className="absolute cursor-pointer bg-transparent"
               onClick={handleSuzuClick}
@@ -185,7 +173,8 @@ const App = () => {
                 zIndex: 10
               }}
             ></div>
-            <audio ref={audioRef} src={suzuSound} preload="auto" />
+            {/* 境内画面のaudioタグ */}
+            <audio ref={audioRef} src="assets/神社の鈴を鳴らす.mp3" preload="auto" />
             {showWishForm && (
               <form onSubmit={handleWishSubmit} className="absolute p-4 rounded-lg shadow-lg w-1/2"
                 style={{ top: '70%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
@@ -284,7 +273,7 @@ const App = () => {
                               alt={character.name} 
                               className="h-full w-full object-contain"
                               onError={(e) => {
-                                e.target.src = characterImage; // フォールバック画像
+                                e.target.src = 'assets/character.png'; // フォールバック画像
                               }}
                             />
                           </div>
@@ -312,7 +301,7 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <img src={emaImage} alt="Ema" className="fs-img" />
+            <img src="assets/ema.png" alt="Ema" className="fs-img" />
             {/* キャラクター画像を絵馬の右下に配置 */}
             {selectedCharacter && (
               <div 
@@ -415,7 +404,7 @@ const App = () => {
                 {allEmaList.map((ema) => (
                   <div key={ema.id} className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent">
                     <img 
-                      src={minnaNoEmaImage} 
+                      src="assets/minna_no_ema.png" 
                       alt="絵馬" 
                       className="w-full h-64 object-cover rounded-md bg-transparent"
                       style={{ backgroundColor: 'transparent' }}
@@ -451,7 +440,7 @@ const App = () => {
                           alt={ema.character.name}
                           className="absolute w-16 h-16 object-contain"
                           style={{ bottom: '8%', right: '12%' }}
-                          onError={e => { e.target.src = characterImage; }}
+                          onError={e => { e.target.src = 'assets/character.png'; }}
                         />
                       )}
                       {/* いいねボタン */}
