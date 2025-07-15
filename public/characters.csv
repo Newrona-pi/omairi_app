@@ -1,0 +1,11 @@
+id,name,image_path,description
+1,お稲荷様,src/assets/koko2.png,商売繁盛の神様
+2,七福神,src/assets/miko-character.png,福を招く神様
+3,天狗,src/assets/miko-character.png,山の修行者
+4,狐,src/assets/miko-character.png,稲荷の使い
+5,龍神,src/assets/miko-character.png,水の神様
+6,鳳凰,src/assets/miko-character.png,幸運の鳥
+7,麒麟,src/assets/miko-character.png,平和の象徴
+8,鶴,src/assets/miko-character.png,長寿の象徴
+9,亀,src/assets/miko-character.png,長寿の象徴
+10,鯉,src/assets/miko-character.png,出世の象徴 
