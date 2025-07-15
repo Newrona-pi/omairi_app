@@ -54,7 +54,7 @@ const App = () => {
   useEffect(() => {
     const loadCharacters = async () => {
       try {
-        const response = await fetch('/characters.csv');
+        const response = await fetch(`${import.meta.env.BASE_URL}characters.csv`);
         const csvText = await response.text();
         const lines = csvText.split('\n');
         const headers = lines[0].split(',');
