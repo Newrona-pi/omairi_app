@@ -139,7 +139,7 @@ const App = () => {
       case 0:
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
-            <img src="assets/character.png" alt="Character" className="fs-img" />
+            <img src="assets/character-CsFcZeIK.png" alt="Character" className="fs-img" />
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
               <h1 className="text-white text-5xl font-bold animate-pulse">タイトル</h1>
             </div>
@@ -148,7 +148,7 @@ const App = () => {
       case 1:
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleToriiClick}>
-            <img src="assets/torii.gif" alt="Torii" className="fs-img" />
+            <img src="assets/torii-B6uLCy4r.gif" alt="Torii" className="fs-img" />
           </div>
         );
       case 2:
@@ -160,7 +160,7 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <img src="assets/keidai.gif" alt="Keidai" className="fs-img" />
+            <img src="assets/keidai-C4Gy5nKi.gif" alt="Keidai" className="fs-img" />
             <div
               className="absolute cursor-pointer bg-transparent"
               onClick={handleSuzuClick}
@@ -174,7 +174,7 @@ const App = () => {
               }}
             ></div>
             {/* 境内画面のaudioタグ */}
-            <audio ref={audioRef} src="assets/神社の鈴を鳴らす.mp3" preload="auto" />
+            <audio ref={audioRef} src="assets/神社の鈴を鳴らす-CfX4AAZh.mp3" preload="auto" />
             {showWishForm && (
               <form onSubmit={handleWishSubmit} className="absolute p-4 rounded-lg shadow-lg w-1/2"
                 style={{ top: '70%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
@@ -301,7 +301,7 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <img src="assets/ema.png" alt="Ema" className="fs-img" />
+            <img src="assets/ema-B7JpMnqw.png" alt="Ema" className="fs-img" />
             {/* キャラクター画像を絵馬の右下に配置 */}
             {selectedCharacter && (
               <div 
@@ -404,7 +404,7 @@ const App = () => {
                 {allEmaList.map((ema) => (
                   <div key={ema.id} className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent">
                     <img 
-                      src="assets/minna_no_ema.png" 
+                      src="assets/minna_no_ema-DuqMoW9J.png" 
                       alt="絵馬" 
                       className="w-full h-64 object-cover rounded-md bg-transparent"
                       style={{ backgroundColor: 'transparent' }}
