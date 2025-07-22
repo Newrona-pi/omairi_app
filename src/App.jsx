@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const App = () => {
-  const [step, setStep] = useState(0); // 0: 初期画面, 1: 鳥居, 2: 境内, 3: 絵馬掛け, 4: 絵馬, 5: みんなの絵馬
+  const [step, setStep] = useState(1); // 1: 初期画面, 2: 鳥居, 3: 境内, 4: 絵馬掛け, 5: キャラ選択, 6: 自分の絵馬, 7: みんなの絵馬
   const [wish, setWish] = useState('');
   const [name, setName] = useState('');
   const [displayWish, setDisplayWish] = useState('');
@@ -14,29 +14,44 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState(''); // 検索キーワード
   const audioRef = useRef(null);
   const inputRef = useRef(null);
+  const crowAudioRef = useRef(null); // カラス音声用
 
   // いいね数と自分が押したかどうかの管理
   const [likesMap, setLikesMap] = useState({}); // { [ema.id]: likeCount }
   const [likedSet, setLikedSet] = useState(new Set()); // Set of liked ema ids
 
-  // みんなの絵馬データ
-  const otherEmas = [
-    { id: 1, wish: '世界平和', name: '名無し' },
-    { id: 2, wish: '宝くじが当たりますように', name: '匿名希望' },
-    { id: 3, wish: '健康第一', name: '健康志向' },
-    { id: 4, wish: '良縁に恵まれますように', name: '縁結び' },
-    { id: 5, wish: '商売繁盛', name: '事業主' },
-    { id: 6, wish: '学業成就', name: '学生' },
-    { id: 7, wish: '家内安全', name: '主婦' },
-    { id: 8, wish: '無病息災', name: '長寿' },
-    { id: 9, wish: '心願成就', name: '祈願' },
-    { id: 10, wish: '試験合格', name: '受験生' },
-    { id: 11, wish: '恋愛成就', name: '恋する人' },
-    { id: 12, wish: '仕事がうまくいきますように', name: '会社員' },
-    { id: 13, wish: '家族みんなが幸せでありますように', name: '家族思い' },
-    { id: 14, wish: '夢が叶いますように', name: '夢追い人' },
-    { id: 15, wish: '毎日が楽しく過ごせますように', name: '楽天家' },
-  ].map(ema => ({ ...ema, createdAt: Date.now() - (16 - ema.id) * 60000 })); // idが大きいほど新しい
+  // 実際のユーザーが書いた絵馬データ
+  const [userEmas, setUserEmas] = useState([]); // 実際のユーザーが書いた絵馬
+
+  // localStorageから絵馬データを読み込む
+  useEffect(() => {
+    const savedEmas = localStorage.getItem('userEmas');
+    const savedLikes = localStorage.getItem('emaLikes');
+    const savedLikedSet = localStorage.getItem('likedSet');
+    
+    if (savedEmas) {
+      setUserEmas(JSON.parse(savedEmas));
+    }
+    if (savedLikes) {
+      setLikesMap(JSON.parse(savedLikes));
+    }
+    if (savedLikedSet) {
+      setLikedSet(new Set(JSON.parse(savedLikedSet)));
+    }
+  }, []);
+
+  // 絵馬データをlocalStorageに保存する関数
+  const saveEmaToStorage = (ema) => {
+    const newEmas = [...userEmas, ema];
+    setUserEmas(newEmas);
+    localStorage.setItem('userEmas', JSON.stringify(newEmas));
+  };
+
+  // いいねデータをlocalStorageに保存する関数
+  const saveLikesToStorage = (newLikesMap, newLikedSet) => {
+    localStorage.setItem('emaLikes', JSON.stringify(newLikesMap));
+    localStorage.setItem('likedSet', JSON.stringify([...newLikedSet]));
+  };
 
   // CSVファイルからキャラクター情報を読み込む
   useEffect(() => {
@@ -76,17 +91,24 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (step === 2 && inputRef.current) {
+    if (step === 3 && inputRef.current) {
       inputRef.current.focus();
     }
   }, [step]);
 
+  useEffect(() => {
+    if (step === 3 && crowAudioRef.current) {
+      crowAudioRef.current.currentTime = 0;
+      crowAudioRef.current.play().catch(() => {});
+    }
+  }, [step]);
+
   const handleInitialClick = () => {
-    setStep(1);
+    setStep(2);
   };
 
   const handleToriiClick = () => {
-    setStep(2);
+    setStep(3);
   };
 
   const handleSuzuClick = () => {
@@ -100,24 +122,34 @@ const App = () => {
     e.preventDefault();
     setDisplayWish(wish);
     setDisplayName(name);
-    setStep(3); // 絵馬掛けではなく、キャラクター選択画面に移動
+    setStep(4); // 絵馬掛け画面に移動
   };
 
   const handleCharacterSelect = (character) => {
     setSelectedCharacter(character);
-    setStep(4); // 自分の絵馬画面に移動
+    setStep(6); // 自分の絵馬画面に移動
+    
+    // 絵馬が完成したら実際のユーザーデータとして保存
+    const newEma = {
+      id: `ema_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      wish: displayWish,
+      name: displayName,
+      character: character,
+      createdAt: Date.now()
+    };
+    saveEmaToStorage(newEma);
   };
 
   const handleEmakakeClick = () => {
-    setStep(4);
-  };
-
-  const handleEmaClick = () => {
     setStep(5);
   };
 
+  const handleEmaClick = () => {
+    setStep(7);
+  };
+
   const handleRestartClick = () => {
-    setStep(0);
+    setStep(1);
     setWish('');
     setName('');
     setDisplayWish('');
@@ -125,7 +157,7 @@ const App = () => {
   };
 
   const handleViewMyEmaClick = () => {
-    setStep(4);
+    setStep(6);
   };
 
   // 検索フィルタリング
@@ -136,22 +168,25 @@ const App = () => {
 
   const renderContent = () => {
     switch (step) {
-      case 0:
+      case 1:
+        // 初期画面
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
             <img src="assets/character-CsFcZeIK.png" alt="Character" className="fs-img" />
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <h1 className="text-white text-5xl font-bold animate-pulse">タイトル</h1>
+              <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-bold animate-pulse px-4 text-center">タイトル</h1>
             </div>
           </div>
         );
-      case 1:
+      case 2:
+        // 鳥居
         return (
-          <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleToriiClick}>
+          <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={e => { e.stopPropagation(); handleToriiClick(); }}>
             <img src="assets/torii-B6uLCy4r.gif" alt="Torii" className="fs-img" />
           </div>
         );
-      case 2:
+      case 3:
+        // 境内（願い事入力）
         return (
           <motion.div
             initial={{ opacity: 0 }}
@@ -175,36 +210,66 @@ const App = () => {
             ></div>
             {/* 境内画面のaudioタグ */}
             <audio ref={audioRef} src="assets/神社の鈴を鳴らす-CfX4AAZh.mp3" preload="auto" />
+            {/* カラスが鳴く夕方.mp3 を自動再生 */}
+            <audio ref={crowAudioRef} src="assets/カラスが鳴く夕方.mp3" preload="auto" />
             {showWishForm && (
-              <form onSubmit={handleWishSubmit} className="absolute p-4 rounded-lg shadow-lg w-1/2"
-                style={{ top: '70%', left: '50%', transform: 'translate(-50%, -50%)', backgroundColor: 'rgba(255, 255, 255, 0.8)' }}>
-                <textarea
-                  ref={inputRef}
-                  className="w-full p-2 mb-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="4"
-                  placeholder="願い事を入力してください..."
-                  value={wish}
-                  onChange={(e) => setWish(e.target.value)}
-                  required
-                ></textarea>
-                <input
-                  type="text"
-                  className="w-full p-2 mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="名前を入力してください..."
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+              <div className="fixed inset-0 flex justify-center items-end pointer-events-none z-0 pb-3">
+                <motion.img
+                  src="assets/minna_no_ema-DuqMoW9J.png"
+                  alt="絵馬"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  className="w-[80vw] max-w-[900px] h-auto"
+                  draggable={false}
                 />
-                <button
-                  type="submit"
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+              </div>
+            )}
+            {showWishForm && (
+              <div className="fixed inset-0 flex justify-center items-end pb-10 pointer-events-none z-10">
+                <motion.form
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                  onSubmit={handleWishSubmit}
+                  className="p-4 rounded-lg shadow-lg w-full max-w-md bg-transparent pointer-events-auto"
                 >
-                  願い事を書く
-                </button>
-              </form>
+                  <textarea
+                    ref={inputRef}
+                    className="block w-full p-2 mb-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-white text-black"
+                    rows="4"
+                    placeholder="願い事を入力してください..."
+                    value={wish}
+                    onChange={(e) => setWish(e.target.value)}
+                    required
+                  ></textarea>
+                  <input
+                    type="text"
+                    className="block w-full p-2 mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                    placeholder="名前を入力してください..."
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    className="block w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+                  >
+                    願い事を書く
+                  </button>
+                </motion.form>
+              </div>
             )}
           </motion.div>
         );
-      case 3:
+      case 4:
+        // 絵馬掛け画像
+        return (
+          <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleEmakakeClick}>
+            <img src="assets/emakake-DeXitYVn.png" alt="絵馬掛け" className="fs-img" />
+          </div>
+        );
+      case 5:
+        // キャラクター選択画面
         return (
           <motion.div
             initial={{ opacity: 0 }}
@@ -213,13 +278,12 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-orange-200 to-orange-400"
           >
-            <div className="absolute inset-0 p-8 overflow-y-auto">
-              <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
+            <div className="absolute inset-0 p-4 sm:p-6 md:p-8 overflow-y-auto">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
                 キャラクターを選んでください
               </h1>
-              
               {/* 検索ボックス */}
-              <div className="max-w-md mx-auto mb-8">
+              <div className="max-w-md mx-auto mb-4 sm:mb-6 md:mb-8">
                 <div className="relative">
                   <input
                     type="text"
@@ -246,7 +310,6 @@ const App = () => {
                   </p>
                 )}
               </div>
-
               {loading ? (
                 <div className="flex justify-center items-center h-64">
                   <div className="text-white text-xl">読み込み中...</div>
@@ -260,28 +323,25 @@ const App = () => {
                       <p className="text-sm opacity-80">検索キーワードを変更してお試しください</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto">
                       {filteredCharacters.map((character) => (
-                        <div 
-                          key={character.id} 
-                          className="bg-white rounded-lg shadow-lg p-4 cursor-pointer transform hover:scale-105 transition-transform duration-300 flex flex-col items-center aspect-[3/4] h-64 w-44"
+                        <div
+                          key={character.id}
+                          className="bg-white rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer transform hover:scale-105 transition-transform duration-300 flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
                           onClick={() => handleCharacterSelect(character)}
                         >
                           <div className="w-full h-4/5 flex items-center justify-center mb-3">
-                            <img 
-                              src={character.image_path} 
-                              alt={character.name} 
+                            <img
+                              src={character.image_path}
+                              alt={character.name}
                               className="h-full w-full object-contain"
                               onError={(e) => {
                                 e.target.src = 'assets/character.png'; // フォールバック画像
                               }}
                             />
                           </div>
-                          <p className="text-center text-sm font-bold text-gray-800 mb-1">
+                          <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
                             {character.name}
-                          </p>
-                          <p className="text-center text-xs text-gray-600">
-                            {character.description}
                           </p>
                         </div>
                       ))}
@@ -292,7 +352,8 @@ const App = () => {
             </div>
           </motion.div>
         );
-      case 4:
+      case 6:
+        // 自分の絵馬画面
         return (
           <motion.div
             initial={{ opacity: 0 }}
@@ -305,26 +366,50 @@ const App = () => {
             {/* キャラクター画像を絵馬の右下に配置 */}
             {selectedCharacter && (
               <div 
-                className="absolute z-10"
+                className="absolute z-0 hidden sm:block"
                 style={{ 
                   bottom: '80px', 
-                  right: '400px' 
+                  right: '320px' 
                 }}
               >
                 <img 
                   src={selectedCharacter.image_path} 
                   alt={selectedCharacter.name} 
-                  className="w-60 h-70 object-contain"
+                  style={{ 
+                    width: '480px', 
+                    height: '560px', 
+                    objectFit: 'contain' 
+                  }}
+                />
+              </div>
+            )}
+            {/* スマホ用キャラクター画像 */}
+            {selectedCharacter && (
+              <div 
+                className="absolute z-0 sm:hidden"
+                style={{ 
+                  bottom: '20px', 
+                  right: '20px' 
+                }}
+              >
+                <img 
+                  src={selectedCharacter.image_path} 
+                  alt={selectedCharacter.name} 
+                  style={{ 
+                    width: '120px', 
+                    height: '140px', 
+                    objectFit: 'contain' 
+                  }}
                 />
               </div>
             )}
             <p
-              className="absolute text-black text-5xl font-handwriting"
+              className="absolute text-black text-lg sm:text-3xl md:text-5xl font-handwriting z-10"
               style={{
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: '60%',
+                width: '80%',
                 textAlign: 'center',
                 whiteSpace: 'pre-wrap',
                 fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
@@ -334,7 +419,7 @@ const App = () => {
               {displayWish}
             </p>
             <p
-              className="absolute text-black text-4xl font-handwriting"
+              className="absolute text-black text-lg sm:text-2xl md:text-4xl font-handwriting z-10"
               style={{
                 bottom: '15%',
                 right: '77%',
@@ -347,132 +432,137 @@ const App = () => {
             </p>
             <button
               onClick={handleEmaClick}
-              className="absolute bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300"
+              className="absolute bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 text-sm sm:text-base z-10"
               style={{ bottom: '5%', left: '50%', transform: 'translateX(-50%)' }}
             >
               みんなの絵馬を見る
             </button>
           </motion.div>
         );
-      case 5:
-        // 自分の絵馬をotherEmasの先頭に追加
-        const myEma = displayWish && displayName ? {
-          id: 'my-ema',
-          wish: displayWish,
-          name: displayName,
-          character: selectedCharacter,
-          createdAt: Date.now()
-        } : null;
-        const allEmaList = [
-          myEma,
-          ...otherEmas
-        ].filter(Boolean)
-         .sort((a, b) => b.createdAt - a.createdAt); // 新着順
-
+      case 7:
+        // みんなの絵馬画面（以前のデザインに戻す）
+        // 新着順でuserEmasを並べる
+        const allEmaList = userEmas
+          .sort((a, b) => b.createdAt - a.createdAt); // 新着順
         // いいねボタンのハンドラ
         const handleLike = (id) => {
           if (likedSet.has(id)) return; // 1人1回
-          setLikesMap(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-          setLikedSet(prev => new Set([...prev, id]));
+          const newLikesMap = { ...likesMap, [id]: (likesMap[id] || 0) + 1 };
+          const newLikedSet = new Set([...likedSet, id]);
+          setLikesMap(newLikesMap);
+          setLikedSet(newLikedSet);
+          saveLikesToStorage(newLikesMap, newLikedSet);
         };
-
         return (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-orange-200 to-orange-400"
+            className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <div className="absolute inset-0 overflow-y-auto p-8">
-              {/* 絵馬購入リンク */}
-              <div className="flex justify-center mb-6">
+            <img 
+              src="assets/everyones-ema-background.png" 
+              alt="みんなの絵馬背景" 
+              className="absolute inset-0 w-full h-full object-cover z-0 blur-sm" 
+              draggable={false}
+            />
+            <div className="absolute inset-0 overflow-y-auto p-4 sm:p-6 md:p-8">
+              <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
+                みんなの絵馬
+              </h1>
+              {/* 絵馬の購入はこちらからボタンと操作ボタンをまとめて上部に表示 */}
+              <div className="flex flex-col items-center gap-4 mb-6">
                 <a
                   href="https://newrona.jp/melofinity"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block bg-yellow-300 hover:bg-yellow-400 text-red-700 font-bold py-3 px-6 rounded-lg shadow-lg text-xl transition mb-4 border-2 border-yellow-500 animate-pulse"
-                  style={{ textDecoration: 'none' }}
+                  className="custom-outline-btn mb-2"
+                  style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
                 >
-                  絵馬の購入はこちら
+                  絵馬の購入はこちらから<span style={{marginLeft: '0.5em', textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>&gt;</span>
                 </a>
+                <div className="flex flex-col sm:flex-row gap-2 w-full justify-center">
+                  <button
+                    onClick={handleViewMyEmaClick}
+                    className="custom-outline-btn w-full sm:w-auto"
+                  >
+                    <span style={{textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>自分の絵馬を見る</span><span style={{marginLeft: '0.5em', textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>&gt;</span>
+                  </button>
+                  <button
+                    onClick={handleRestartClick}
+                    className="custom-outline-btn w-full sm:w-auto"
+                  >
+                    <span style={{textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>もう一度お参りをする</span><span style={{marginLeft: '0.5em', textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>&gt;</span>
+                  </button>
+                </div>
               </div>
-              <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
-                みんなの絵馬
-              </h1>
               <div className="grid grid-cols-4 gap-4 max-w-7xl mx-auto">
-                {allEmaList.map((ema) => (
-                  <div key={ema.id} className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent">
-                    <img 
-                      src="assets/minna_no_ema-DuqMoW9J.png" 
-                      alt="絵馬" 
-                      className="w-full h-64 object-cover rounded-md bg-transparent"
-                      style={{ backgroundColor: 'transparent' }}
-                    />
-                    <div className="absolute inset-0 flex flex-col justify-center items-center p-4 pointer-events-none">
-                      <p className="text-lg text-black mb-3 font-medium text-center leading-tight"
-                         style={{
-                           fontFamily: '"Hina Mincho", serif',
-                           textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-                           maxWidth: '70%',
-                           position: 'absolute',
-                           top: '60%',
-                           left: '50%',
-                           transform: 'translate(-50%, -50%)'
-                         }}>
-                        {ema.wish}
-                      </p>
-                      <p className="text-sm text-black font-medium"
-                         style={{
-                           fontFamily: '"Hina Mincho", serif',
-                           textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-                           position: 'absolute',
-                           bottom: '10%',
-                           right: '70%',
-                           transform: 'translateX(50%)'
-                         }}>
-                        {ema.name}
-                      </p>
-                      {/* 自分の絵馬でキャラクター画像がある場合のみ右下に表示 */}
-                      {ema.id === 'my-ema' && ema.character && (
-                        <img
-                          src={ema.character.image_path}
-                          alt={ema.character.name}
-                          className="absolute w-16 h-16 object-contain"
-                          style={{ bottom: '8%', right: '12%' }}
-                          onError={e => { e.target.src = 'assets/character.png'; }}
-                        />
-                      )}
-                      {/* いいねボタン */}
-                      <button
-                        type="button"
-                        className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-                        style={{ bottom: '8%', left: '8%' }}
-                        onClick={() => handleLike(ema.id)}
-                        disabled={likedSet.has(ema.id)}
-                        aria-label="いいね"
-                      >
-                        <span role="img" aria-label="like">❤️</span>
-                        {likesMap[ema.id] || 0}
-                      </button>
-                    </div>
+                {allEmaList.length === 0 ? (
+                  <div className="col-span-4 text-center text-white text-xl py-8">
+                    まだ絵馬が投稿されていません。<br />
+                    最初の絵馬を書いてみませんか？
                   </div>
-                ))}
+                ) : (
+                  allEmaList.map((ema) => (
+                    <div key={ema.id} className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent">
+                      <img 
+                        src="assets/minna_no_ema-DuqMoW9J.png" 
+                        alt="絵馬" 
+                        className="w-full h-48 object-cover rounded-md bg-transparent"
+                        style={{ backgroundColor: 'transparent' }}
+                      />
+                      <div className="absolute inset-0 flex flex-col justify-center items-center p-4 pointer-events-none">
+                        <p className="text-lg text-black mb-3 font-medium text-center leading-tight"
+                           style={{
+                             fontFamily: '"Hina Mincho", serif',
+                             textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                             maxWidth: '70%',
+                             position: 'absolute',
+                             top: '60%',
+                             left: '50%',
+                             transform: 'translate(-50%, -50%)'
+                           }}>
+                          {ema.wish}
+                        </p>
+                        <p className="text-sm text-black font-medium"
+                           style={{
+                             fontFamily: '"Hina Mincho", serif',
+                             textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                             position: 'absolute',
+                             bottom: '10%',
+                             right: '70%',
+                             transform: 'translateX(50%)'
+                           }}>
+                          {ema.name}
+                        </p>
+                        {/* キャラクター画像がある場合のみ右下に表示 */}
+                        {ema.character && (
+                          <img
+                            src={ema.character.image_path}
+                            alt={ema.character.name}
+                            className="absolute w-16 h-16 object-contain"
+                            style={{ bottom: '8%', right: '12%' }}
+                            onError={e => { e.target.src = 'assets/character.png'; }}
+                          />
+                        )}
+                        {/* いいねボタン */}
+                        <button
+                          type="button"
+                          className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
+                          style={{ bottom: '8%', left: '8%' }}
+                          onClick={() => handleLike(ema.id)}
+                          disabled={likedSet.has(ema.id)}
+                          aria-label="いいね"
+                        >
+                          <span role="img" aria-label="like">❤️</span>
+                          {likesMap[ema.id] || 0}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
-            </div>
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col gap-4 z-10">
-              <button
-                onClick={handleViewMyEmaClick}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 shadow-lg"
-              >
-                自分の絵馬を見る
-              </button>
-              <button
-                onClick={handleRestartClick}
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-md transition duration-300 shadow-lg"
-              >
-                もう一度お参りをする
-              </button>
             </div>
           </motion.div>
         );
