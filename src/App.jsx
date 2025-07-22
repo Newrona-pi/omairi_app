@@ -166,6 +166,45 @@ const App = () => {
     character.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // 文字数に応じてフォントサイズを返す関数
+  const getWishFontSize = (wish) => {
+    if (!wish) return '1rem';
+    if (wish.length <= 7) return '1.2rem';
+    if (wish.length <= 16) return '1.1rem';
+    if (wish.length <= 30) return '1rem';
+    if (wish.length <= 40) return '0.9rem';
+    return '0.8rem';
+  };
+
+  // 文字数に応じて名前のフォントサイズを返す関数
+  const getNameFontSize = (name) => {
+    if (!name) return '1rem';
+    if (name.length <= 4) return '1rem';
+    if (name.length <= 5) return '0.9rem';
+    if (name.length <= 6) return '0.8rem';
+    if (name.length <= 7) return '0.7rem';
+    if (name.length <= 8) return '0.6rem';
+    return '0.5rem';
+  };
+
+  // スマホ判定用state
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // スマホ用：文字数に応じてフォントサイズを返す関数
+  const getWishFontSizeMobile = (wish) => {
+    if (!wish) return '1rem';
+    if (wish.length <= 8) return '1.1rem';
+    if (wish.length <= 14) return '1rem';
+    if (wish.length <= 20) return '0.9rem';
+    if (wish.length <= 30) return '0.8rem';
+    return '0.7rem';
+  };
+
   const renderContent = () => {
     switch (step) {
       case 1:
@@ -422,7 +461,7 @@ const App = () => {
               className="absolute text-black text-lg sm:text-2xl md:text-4xl font-handwriting z-10"
               style={{
                 bottom: '15%',
-                right: '77%',
+                right: '70%',
                 transform: 'translateX(50%)',
                 fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
                 textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
@@ -432,10 +471,11 @@ const App = () => {
             </p>
             <button
               onClick={handleEmaClick}
-              className="absolute bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 text-sm sm:text-base z-10"
-              style={{ bottom: '5%', left: '50%', transform: 'translateX(-50%)' }}
+              className="absolute custom-outline-btn z-10"
+              style={{ top: '5%', right: '5%', minWidth: '220px' }}
             >
-              みんなの絵馬を見る
+              <span className="btn-label-highlight">みんなの絵馬を見る</span>
+              <span className="btn-arrow-highlight">&gt;</span>
             </button>
           </motion.div>
         );
@@ -469,7 +509,7 @@ const App = () => {
             />
             <div className="absolute inset-0 overflow-y-auto p-4 sm:p-6 md:p-8">
               <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
-                みんなの絵馬
+                ～ みんなの絵馬 ～
               </h1>
               {/* 絵馬の購入はこちらからボタンと操作ボタンをまとめて上部に表示 */}
               <div className="flex flex-col items-center gap-4 mb-6">
@@ -477,27 +517,30 @@ const App = () => {
                   href="https://newrona.jp/melofinity"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="custom-outline-btn mb-2"
+                  className="custom-outline-btn mx-auto mb-2"
                   style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
                 >
-                  絵馬の購入はこちらから<span style={{marginLeft: '0.5em', textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>&gt;</span>
+                  <span className="btn-label-highlight">絵馬の購入はこちらから</span>
+                  <span className="btn-arrow-highlight">&gt;</span>
                 </a>
-                <div className="flex flex-col sm:flex-row gap-2 w-full justify-center">
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
                   <button
                     onClick={handleViewMyEmaClick}
-                    className="custom-outline-btn w-full sm:w-auto"
+                    className="custom-outline-btn mx-auto mb-2"
                   >
-                    <span style={{textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>自分の絵馬を見る</span><span style={{marginLeft: '0.5em', textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>&gt;</span>
+                    <span className="btn-label-highlight">自分の絵馬を見る</span>
+                    <span className="btn-arrow-highlight">&gt;</span>
                   </button>
                   <button
                     onClick={handleRestartClick}
-                    className="custom-outline-btn w-full sm:w-auto"
+                    className="custom-outline-btn mx-auto mb-2"
                   >
-                    <span style={{textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>もう一度お参りをする</span><span style={{marginLeft: '0.5em', textShadow: '0 0 3px #fff, 0 0 3px #fff'}}>&gt;</span>
+                    <span className="btn-label-highlight">もう一度お参りをする</span>
+                    <span className="btn-arrow-highlight">&gt;</span>
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-4 max-w-7xl mx-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-7xl mx-auto">
                 {allEmaList.length === 0 ? (
                   <div className="col-span-4 text-center text-white text-xl py-8">
                     まだ絵馬が投稿されていません。<br />
@@ -521,7 +564,10 @@ const App = () => {
                              position: 'absolute',
                              top: '60%',
                              left: '50%',
-                             transform: 'translate(-50%, -50%)'
+                             transform: 'translate(-50%, -50%)',
+                             fontSize: isMobile ? getWishFontSizeMobile(ema.wish) : getWishFontSize(ema.wish),
+                             wordBreak: 'break-word',
+                             whiteSpace: 'pre-wrap'
                            }}>
                           {ema.wish}
                         </p>
@@ -530,9 +576,14 @@ const App = () => {
                              fontFamily: '"Hina Mincho", serif',
                              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
                              position: 'absolute',
-                             bottom: '10%',
-                             right: '70%',
-                             transform: 'translateX(50%)'
+                             bottom: isMobile ? '20%' : '10%',
+                             right: '65%',
+                             transform: 'translateX(50%)',
+                             fontSize: getNameFontSize(ema.name),
+                             maxWidth: '60%',
+                             overflow: 'hidden',
+                             textOverflow: 'ellipsis',
+                             whiteSpace: 'nowrap'
                            }}>
                           {ema.name}
                         </p>
@@ -542,23 +593,40 @@ const App = () => {
                             src={ema.character.image_path}
                             alt={ema.character.name}
                             className="absolute w-16 h-16 object-contain"
-                            style={{ bottom: '8%', right: '12%' }}
+                            style={isMobile ? { bottom: '20%', right: '-2%' } : { bottom: '4%', right: '18%' }}
                             onError={e => { e.target.src = 'assets/character.png'; }}
                           />
                         )}
-                        {/* いいねボタン */}
-                        <button
-                          type="button"
-                          className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-                          style={{ bottom: '8%', left: '8%' }}
-                          onClick={() => handleLike(ema.id)}
-                          disabled={likedSet.has(ema.id)}
-                          aria-label="いいね"
-                        >
-                          <span role="img" aria-label="like">❤️</span>
-                          {likesMap[ema.id] || 0}
-                        </button>
+                        {/* いいねボタン PC表示のみ */}
+                        {!isMobile && (
+                          <button
+                            type="button"
+                            className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
+                            style={{ bottom: '8%', left: '8%' }}
+                            onClick={() => handleLike(ema.id)}
+                            disabled={likedSet.has(ema.id)}
+                            aria-label="いいね"
+                          >
+                            <span role="img" aria-label="like">❤️</span>
+                            {likesMap[ema.id] || 0}
+                          </button>
+                        )}
                       </div>
+                      {/* いいねボタン スマホ表示のみ（絵馬の下に独立して配置） */}
+                      {isMobile && (
+                        <div className="flex justify-center mt-2">
+                          <button
+                            type="button"
+                            className="flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
+                            onClick={() => handleLike(ema.id)}
+                            disabled={likedSet.has(ema.id)}
+                            aria-label="いいね"
+                          >
+                            <span role="img" aria-label="like">❤️</span>
+                            {likesMap[ema.id] || 0}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
