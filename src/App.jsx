@@ -252,6 +252,9 @@ const App = () => {
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
             <img src="assets/character-CsFcZeIK.png" alt="Character" className="fs-img" />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-bold animate-pulse px-4 text-center drop-shadow-lg">タイトル</h1>
+            </div>
           </div>
         );
       case 2:
