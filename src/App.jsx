@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
 const App = () => {
@@ -143,19 +143,21 @@ const App = () => {
     setStep(4); // 絵馬掛け画面に移動
   };
 
-  const handleCharacterSelect = (character) => {
+  const handleCharacterSelect = async (character) => {
     setSelectedCharacter(character);
     setStep(6); // 自分の絵馬画面に移動
-    
-    // 絵馬が完成したら実際のユーザーデータとして保存
-    const newEma = {
-      id: `ema_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      wish: displayWish,
-      name: displayName,
-      character: character,
-      createdAt: Date.now()
-    };
-    saveEmaToStorage(newEma);
+    // Firestoreに絵馬を保存
+    try {
+      await addDoc(collection(db, 'emas'), {
+        wish: displayWish,
+        name: displayName,
+        character: character,
+        created_at: serverTimestamp(),
+        likes: 0
+      });
+    } catch (e) {
+      console.error('絵馬の保存に失敗しました', e);
+    }
   };
 
   const handleEmakakeClick = () => {
