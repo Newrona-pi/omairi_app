@@ -523,7 +523,7 @@ const App = () => {
         // みんなの絵馬画面
         const allEmaList = [...emas].sort((a, b) => {
           if (sortByLikes) {
-            return (b.likes || 0) - (a.likes || 0); // いいね順
+            return (likesMap[b.id] || 0) - (likesMap[a.id] || 0); // likesMapを使用
           } else {
             return (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0); // 新着順
           }
