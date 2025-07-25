@@ -109,6 +109,19 @@ const App = () => {
     loadCharacters();
   }, []);
 
+  // Firestoreから絵馬データを取得する関数
+  const fetchEmas = async () => {
+    const emasRef = collection(db, 'emas');
+    const snapshot = await getDocs(emasRef);
+    setEmas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  };
+
+  useEffect(() => {
+    if (step === 7) {
+      fetchEmas();
+    }
+  }, [step]);
+
   useEffect(() => {
     if (step === 3 && inputRef.current) {
       inputRef.current.focus();
@@ -119,17 +132,6 @@ const App = () => {
     if (step === 3 && crowAudioRef.current) {
       crowAudioRef.current.currentTime = 0;
       crowAudioRef.current.play().catch(() => {});
-    }
-  }, [step]);
-
-  useEffect(() => {
-    if (step === 7) {
-      const fetchEmas = async () => {
-        const emasRef = collection(db, 'emas');
-        const snapshot = await getDocs(emasRef);
-        setEmas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      };
-      fetchEmas();
     }
   }, [step]);
 
@@ -534,6 +536,7 @@ const App = () => {
             await updateDoc(emaRef, { likes: increment(1) });
             setLikedSet(new Set([...likedSet, id]));
             saveLikesToStorage(new Set([...likedSet, id]));
+            await fetchEmas(); // いいね更新後に再取得
           } catch (e) {
             console.error('いいねの更新に失敗しました', e);
           }
