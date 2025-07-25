@@ -521,8 +521,13 @@ const App = () => {
         );
       case 7:
         // みんなの絵馬画面
-        const allEmaList = emas
-          .sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0)); // 新着順
+        const allEmaList = [...emas].sort((a, b) => {
+          if (sortByLikes) {
+            return (b.likes || 0) - (a.likes || 0); // いいね順
+          } else {
+            return (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0); // 新着順
+          }
+        });
         // いいねボタンのハンドラ
         const handleLike = (id) => {
           if (likedSet.has(id)) return; // 1人1回
