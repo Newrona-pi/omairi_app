@@ -162,12 +162,16 @@ const App = () => {
     setStep(6); // 自分の絵馬画面に移動
     // Firestoreに絵馬を保存
     try {
-      // characterオブジェクトからundefinedを再帰的に除去
-      const cleanCharacter = removeUndefined(character);
+      // characterがundefined/nullの場合は空オブジェクトに
+      const cleanCharacter = character ? removeUndefined(character) : {};
+      // descriptionフィールドを明示的に除外
+      const { description, ...characterWithoutDescription } = cleanCharacter;
+      console.log('character before save:', character);
+      console.log('cleanCharacter:', cleanCharacter);
       await addDoc(collection(db, 'emas'), {
         wish: displayWish,
         name: displayName,
-        character: cleanCharacter,
+        character: characterWithoutDescription,
         created_at: serverTimestamp(),
         likes: 0
       });
