@@ -533,10 +533,12 @@ const App = () => {
           if (likedSet.has(id)) return; // 1人1回
           try {
             const emaRef = doc(db, 'emas', id);
+            console.log('like update: id', id, 'emaRef.path', emaRef.path);
             await updateDoc(emaRef, { likes: increment(1) });
             setLikedSet(new Set([...likedSet, id]));
             saveLikesToStorage(new Set([...likedSet, id]));
             await fetchEmas(); // いいね更新後に再取得
+            console.log('after update, emas:', emas);
           } catch (e) {
             console.error('いいねの更新に失敗しました', e);
           }
