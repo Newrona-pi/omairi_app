@@ -148,10 +148,15 @@ const App = () => {
     setStep(6); // 自分の絵馬画面に移動
     // Firestoreに絵馬を保存
     try {
+      // characterオブジェクトからundefinedを除去
+      const cleanCharacter = {};
+      Object.entries(character).forEach(([key, value]) => {
+        if (value !== undefined) cleanCharacter[key] = value;
+      });
       await addDoc(collection(db, 'emas'), {
         wish: displayWish,
         name: displayName,
-        character: character,
+        character: cleanCharacter,
         created_at: serverTimestamp(),
         likes: 0
       });
