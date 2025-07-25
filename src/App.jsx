@@ -3,6 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
+// 再帰的にundefinedを除去する関数
+function removeUndefined(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefined);
+  } else if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([_, v]) => v !== undefined)
+        .map(([k, v]) => [k, removeUndefined(v)])
+    );
+  }
+  return obj;
+}
+
 const App = () => {
   const [step, setStep] = useState(1); // 1: 初期画面, 2: 鳥居, 3: 境内, 4: 絵馬掛け, 5: キャラ選択, 6: 自分の絵馬, 7: みんなの絵馬
   const [wish, setWish] = useState('');
@@ -148,11 +162,8 @@ const App = () => {
     setStep(6); // 自分の絵馬画面に移動
     // Firestoreに絵馬を保存
     try {
-      // characterオブジェクトからundefinedを除去
-      const cleanCharacter = {};
-      Object.entries(character).forEach(([key, value]) => {
-        if (value !== undefined) cleanCharacter[key] = value;
-      });
+      // characterオブジェクトからundefinedを再帰的に除去
+      const cleanCharacter = removeUndefined(character);
       await addDoc(collection(db, 'emas'), {
         wish: displayWish,
         name: displayName,
