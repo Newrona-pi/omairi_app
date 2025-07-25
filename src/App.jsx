@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, serverTimestamp, updateDoc, doc, increment } from 'firebase/firestore';
 import { db } from './firebase';
 
 // 再帰的にundefinedを除去する関数
@@ -33,7 +33,6 @@ const App = () => {
   const crowAudioRef = useRef(null); // カラス音声用
 
   // いいね数と自分が押したかどうかの管理
-  const [likesMap, setLikesMap] = useState({}); // { [ema.id]: likeCount }
   const [likedSet, setLikedSet] = useState(new Set()); // Set of liked ema ids
   // 並び替え方法の管理（false:新着順, true:いいね順）
   const [sortByLikes, setSortByLikes] = useState(false);
@@ -54,7 +53,7 @@ const App = () => {
       setUserEmas(JSON.parse(savedEmas));
     }
     if (savedLikes) {
-      setLikesMap(JSON.parse(savedLikes));
+      // likesMapは不要になったため、localStorageから削除
     }
     if (savedLikedSet) {
       setLikedSet(new Set(JSON.parse(savedLikedSet)));
@@ -69,8 +68,7 @@ const App = () => {
   };
 
   // いいねデータをlocalStorageに保存する関数
-  const saveLikesToStorage = (newLikesMap, newLikedSet) => {
-    localStorage.setItem('emaLikes', JSON.stringify(newLikesMap));
+  const saveLikesToStorage = (newLikedSet) => {
     localStorage.setItem('likedSet', JSON.stringify([...newLikedSet]));
   };
 
@@ -523,19 +521,22 @@ const App = () => {
         // みんなの絵馬画面
         const allEmaList = [...emas].sort((a, b) => {
           if (sortByLikes) {
-            return (likesMap[b.id] || 0) - (likesMap[a.id] || 0); // likesMapを使用
+            return (b.likes || 0) - (a.likes || 0); // Firestoreのlikesを使用
           } else {
             return (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0); // 新着順
           }
         });
         // いいねボタンのハンドラ
-        const handleLike = (id) => {
+        const handleLike = async (id) => {
           if (likedSet.has(id)) return; // 1人1回
-          const newLikesMap = { ...likesMap, [id]: (likesMap[id] || 0) + 1 };
-          const newLikedSet = new Set([...likedSet, id]);
-          setLikesMap(newLikesMap);
-          setLikedSet(newLikedSet);
-          saveLikesToStorage(newLikesMap, newLikedSet);
+          try {
+            const emaRef = doc(db, 'emas', id);
+            await updateDoc(emaRef, { likes: increment(1) });
+            setLikedSet(new Set([...likedSet, id]));
+            saveLikesToStorage(new Set([...likedSet, id]));
+          } catch (e) {
+            console.error('いいねの更新に失敗しました', e);
+          }
         };
         return (
           <motion.div
@@ -668,7 +669,7 @@ const App = () => {
                             aria-label="いいね"
                           >
                             <span role="img" aria-label="like">❤️</span>
-                            {likesMap[ema.id] || 0}
+                            {ema.likes || 0}
                           </button>
                         )}
                       </div>
@@ -683,7 +684,7 @@ const App = () => {
                             aria-label="いいね"
                           >
                             <span role="img" aria-label="like">❤️</span>
-                            {likesMap[ema.id] || 0}
+                            {ema.likes || 0}
                           </button>
                         </div>
                       )}
