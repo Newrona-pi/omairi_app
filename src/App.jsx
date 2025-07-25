@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from './firebase';
 
 const App = () => {
   const [step, setStep] = useState(1); // 1: 初期画面, 2: 鳥居, 3: 境内, 4: 絵馬掛け, 5: キャラ選択, 6: 自分の絵馬, 7: みんなの絵馬
@@ -19,9 +21,14 @@ const App = () => {
   // いいね数と自分が押したかどうかの管理
   const [likesMap, setLikesMap] = useState({}); // { [ema.id]: likeCount }
   const [likedSet, setLikedSet] = useState(new Set()); // Set of liked ema ids
+  // 並び替え方法の管理（false:新着順, true:いいね順）
+  const [sortByLikes, setSortByLikes] = useState(false);
 
   // 実際のユーザーが書いた絵馬データ
   const [userEmas, setUserEmas] = useState([]); // 実際のユーザーが書いた絵馬
+
+  // Firestoreから取得した絵馬データ
+  const [emas, setEmas] = useState([]);
 
   // localStorageから絵馬データを読み込む
   useEffect(() => {
@@ -103,6 +110,17 @@ const App = () => {
     }
   }, [step]);
 
+  useEffect(() => {
+    if (step === 7) {
+      const fetchEmas = async () => {
+        const emasRef = collection(db, 'emas');
+        const snapshot = await getDocs(emasRef);
+        setEmas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      };
+      fetchEmas();
+    }
+  }, [step]);
+
   const handleInitialClick = () => {
     setStep(2);
   };
@@ -162,8 +180,8 @@ const App = () => {
 
   // 検索フィルタリング
   const filteredCharacters = characters.filter(character =>
-    character.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    character.description.toLowerCase().includes(searchTerm.toLowerCase())
+    (character.name && character.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (character.description && character.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // 文字数に応じてフォントサイズを返す関数
@@ -480,10 +498,9 @@ const App = () => {
           </motion.div>
         );
       case 7:
-        // みんなの絵馬画面（以前のデザインに戻す）
-        // 新着順でuserEmasを並べる
-        const allEmaList = userEmas
-          .sort((a, b) => b.createdAt - a.createdAt); // 新着順
+        // みんなの絵馬画面
+        const allEmaList = emas
+          .sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0)); // 新着順
         // いいねボタンのハンドラ
         const handleLike = (id) => {
           if (likedSet.has(id)) return; // 1人1回
@@ -511,6 +528,22 @@ const App = () => {
               <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
                 ～ みんなの絵馬 ～
               </h1>
+              {/* 並び替えスイッチ */}
+              <div className="flex justify-center items-center mb-4">
+                <span className="text-white mr-2 text-sm">新着順</span>
+                <button
+                  onClick={() => setSortByLikes(!sortByLikes)}
+                  className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none ${sortByLikes ? 'bg-pink-400' : 'bg-gray-300'}`}
+                  aria-label="並び替えスイッチ"
+                  style={{ minWidth: '56px' }}
+                >
+                  <span
+                    className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${sortByLikes ? 'translate-x-7' : ''}`}
+                    style={{ transform: sortByLikes ? 'translateX(28px)' : 'none' }}
+                  ></span>
+                </button>
+                <span className="text-white ml-2 text-sm">いいね順</span>
+              </div>
               {/* 絵馬の購入はこちらからボタンと操作ボタンをまとめて上部に表示 */}
               <div className="flex flex-col items-center gap-4 mb-6">
                 <a
