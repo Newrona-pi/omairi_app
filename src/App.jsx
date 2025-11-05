@@ -406,8 +406,17 @@ const App = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="fixed inset-0 w-screen h-screen overflow-hidden bg-gradient-to-b from-orange-200 to-orange-400"
+            className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
+            <video
+              src="assets/20251105_1612_01k99dqb5jfeyss6nv2m5s4kbj.mp4"
+              className="absolute inset-0 w-full h-full object-cover z-0"
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ filter: 'blur(8px)' }}
+            />
             <div className="absolute inset-0 p-4 sm:p-6 md:p-8 overflow-y-auto">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
                 キャラクターを選んでください
