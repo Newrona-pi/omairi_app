@@ -300,7 +300,7 @@ const App = () => {
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={e => { e.stopPropagation(); handleToriiClick(); }}>
             <video
-              src="assets/20251031_1600_01k8w1wd41eee8zw44van1nsns.mp4"
+              src="assets/20251105_1610_01k99a5pnjeehv67080p2z5cg7.mp4"
               className="fs-img"
               autoPlay
               loop
@@ -399,7 +399,7 @@ const App = () => {
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleEmakakeClick}>
             <video
-              src="assets/20251031_1756_01k8wkbqvkffeavshjb7ryeyvm.mp4"
+              src="assets/20251105_1612_01k99dqb5jfeyss6nv2m5s4kbj.mp4"
               className="fs-img"
               autoPlay
               loop
@@ -668,7 +668,7 @@ const App = () => {
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
             <video
-              src="assets/20251031_1756_01k8wkbqvkffeavshjb7ryeyvm.mp4"
+              src="assets/20251105_1612_01k99dqb5jfeyss6nv2m5s4kbj.mp4"
               className="absolute inset-0 w-full h-full object-cover z-0 blur-sm"
               autoPlay
               loop
