@@ -577,7 +577,7 @@ const App = () => {
                 className="absolute z-0"
                 style={{ 
                   bottom: '1vw',
-                  right: '25vw',
+                  right: '23vw',
                   width: '25vw',     // 480px/1920px = 25vw
                   height: '60vh',    // 固定高さ（伸縮しない）
                   overflow: 'hidden', // はみ出しを防ぐ
