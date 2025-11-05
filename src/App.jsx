@@ -43,6 +43,12 @@ const App = () => {
   // Firestoreから取得した絵馬データ
   const [emas, setEmas] = useState([]);
 
+  // 自分の絵馬画面でのボタン表示状態
+  const [showButtons, setShowButtons] = useState(true);
+
+  // 拡大表示する絵馬
+  const [expandedEma, setExpandedEma] = useState(null);
+
   // localStorageから絵馬データを読み込む
   useEffect(() => {
     const savedEmas = localStorage.getItem('userEmas');
@@ -97,10 +103,10 @@ const App = () => {
         console.error('CSVファイルの読み込みに失敗しました:', error);
         // フォールバック: デフォルトのキャラクター
         setCharacters([
-          { id: 1, name: 'お稲荷様', image_path: 'assets/character.png', description: '商売繁盛の神様' },
-          { id: 2, name: '七福神', image_path: 'assets/character.png', description: '福を招く神様' },
-          { id: 3, name: '天狗', image_path: 'assets/character.png', description: '山の修行者' },
-          { id: 4, name: '狐', image_path: 'assets/character.png', description: '稲荷の使い' }
+          { id: 1, name: 'そらねなご', image_path: 'new-png-assets/01_そらねなご.png', description: 'そらねなご' },
+          { id: 2, name: '天輪ちゃちゃ', image_path: 'new-png-assets/02_天輪ちゃちゃ.png', description: '天輪ちゃちゃ' },
+          { id: 3, name: '熊蜂えま', image_path: 'new-png-assets/03_熊蜂えま.png', description: '熊蜂えま' },
+          { id: 4, name: 'ラビスベレイ', image_path: 'new-png-assets/04_ラビスベレイ.png', description: 'ラビスベレイ' }
         ]);
         setLoading(false);
       }
@@ -198,6 +204,16 @@ const App = () => {
 
   const handleViewMyEmaClick = () => {
     setStep(6);
+    setShowButtons(true); // 自分の絵馬画面に戻った時にボタンを表示
+  };
+
+  // 自分の絵馬画面での背景クリック処理
+  const handleMyEmaBackgroundClick = (e) => {
+    // ボタンエリアをクリックした場合は何もしない
+    if (e.target.closest('.button-container')) {
+      return;
+    }
+    setShowButtons(prev => !prev);
   };
 
   // 検索フィルタリング
@@ -205,6 +221,18 @@ const App = () => {
     (character.name && character.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (character.description && character.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // 10文字ごとに改行を挿入する関数
+  const insertLineBreaks = (text) => {
+    if (!text) return '';
+    // 改行文字を削除してから処理
+    const cleanText = text.replace(/\n/g, '');
+    const lines = [];
+    for (let i = 0; i < cleanText.length; i += 10) {
+      lines.push(cleanText.slice(i, i + 10));
+    }
+    return lines.join('\n');
+  };
 
   // 文字数に応じてフォントサイズを返す関数
   const getWishFontSize = (wish) => {
@@ -251,9 +279,19 @@ const App = () => {
         // 初期画面
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
-            <img src="assets/character-CsFcZeIK.png" alt="Character" className="fs-img" />
+            <video
+              src="assets/20251105_1149_01k98yer6ge2mt2vtd2z1bb2p8.mp4"
+              className="fs-img"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-bold animate-pulse px-4 text-center drop-shadow-lg">タイトル</h1>
+              <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-bold animate-pulse px-4 text-center drop-shadow-lg"
+                  style={{ fontFamily: '"Yomogi", cursive' }}>
+                タイトル
+              </h1>
             </div>
           </div>
         );
@@ -261,7 +299,14 @@ const App = () => {
         // 鳥居
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={e => { e.stopPropagation(); handleToriiClick(); }}>
-            <img src="assets/torii-B6uLCy4r.gif" alt="Torii" className="fs-img" />
+            <video
+              src="assets/20251031_1600_01k8w1wd41eee8zw44van1nsns.mp4"
+              className="fs-img"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
           </div>
         );
       case 3:
@@ -274,7 +319,14 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <img src="assets/keidai-C4Gy5nKi.gif" alt="Keidai" className="fs-img" />
+            <video
+              src="assets/20251031_1633_01k8wjw1m5fhyaetp8wh8sdn1f.mp4"
+              className="fs-img"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
             <div
               className="absolute cursor-pointer bg-transparent"
               onClick={handleSuzuClick}
@@ -317,17 +369,19 @@ const App = () => {
                     ref={inputRef}
                     className="block w-full p-2 mb-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-white text-black"
                     rows="4"
-                    placeholder="願い事を入力してください..."
+                    placeholder="願い事を入力してください（20文字まで）..."
                     value={wish}
                     onChange={(e) => setWish(e.target.value)}
+                    maxLength={20}
                     required
                   ></textarea>
                   <input
                     type="text"
                     className="block w-full p-2 mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    placeholder="名前を入力してください..."
+                    placeholder="名前を入力してください（10文字まで）..."
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    maxLength={10}
                   />
                   <button
                     type="submit"
@@ -344,7 +398,14 @@ const App = () => {
         // 絵馬掛け画像
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleEmakakeClick}>
-            <img src="assets/emakake-DeXitYVn.png" alt="絵馬掛け" className="fs-img" />
+            <video
+              src="assets/20251031_1756_01k8wkbqvkffeavshjb7ryeyvm.mp4"
+              className="fs-img"
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
           </div>
         );
       case 5:
@@ -415,7 +476,7 @@ const App = () => {
                               alt={character.name}
                               className="h-full w-full object-contain"
                               onError={(e) => {
-                                e.target.src = 'assets/character.png'; // フォールバック画像
+                                e.target.src = 'new-png-assets/01_そらねなご.png'; // フォールバック画像
                               }}
                             />
                           </div>
@@ -440,83 +501,138 @@ const App = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
+            onClick={handleMyEmaBackgroundClick}
           >
-            <img src="assets/ema-B7JpMnqw.png" alt="Ema" className="fs-img" />
-            {/* キャラクター画像を絵馬の右下に配置 */}
-            {selectedCharacter && (
-              <div 
-                className="absolute z-0 hidden sm:block"
-                style={{ 
-                  bottom: '80px', 
-                  right: '320px' 
-                }}
-              >
-                <img 
-                  src={selectedCharacter.image_path} 
-                  alt={selectedCharacter.name} 
-                  style={{ 
-                    width: '480px', 
-                    height: '560px', 
-                    objectFit: 'contain' 
-                  }}
-                />
-              </div>
-            )}
-            {/* スマホ用キャラクター画像 */}
-            {selectedCharacter && (
-              <div 
-                className="absolute z-0 sm:hidden"
-                style={{ 
-                  bottom: '20px', 
-                  right: '20px' 
-                }}
-              >
-                <img 
-                  src={selectedCharacter.image_path} 
-                  alt={selectedCharacter.name} 
-                  style={{ 
-                    width: '120px', 
-                    height: '140px', 
-                    objectFit: 'contain' 
-                  }}
-                />
-              </div>
-            )}
-            <p
-              className="absolute text-black text-lg sm:text-3xl md:text-5xl font-handwriting z-10"
+            <img src="assets/ema1105.png" alt="Ema" className="fs-img" />
+            
+            {/* 願い事用の透明コンテナ */}
+            <div
+              className="absolute z-10"
               style={{
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: '80%',
-                textAlign: 'center',
-                whiteSpace: 'pre-wrap',
-                fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-                textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                width: '41.67vw',  // 800px/1920px ≈ 41.67vw
+                height: '30vh',    // 固定高さ（伸縮しない）
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,      // flexでの縮小を防止
               }}
             >
-              {displayWish}
-            </p>
-            <p
-              className="absolute text-black text-lg sm:text-2xl md:text-4xl font-handwriting z-10"
+              <p
+                className="text-black font-handwriting"
+                style={{
+                  fontSize: '2.6vw', // 約50px/1920px ≈ 2.6vw
+                  textAlign: 'center',
+                  whiteSpace: 'pre-wrap',
+                  fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
+                  textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                  margin: 0,
+                  padding: 0,
+                  width: '100%',
+                }}
+              >
+                {insertLineBreaks(displayWish)}
+              </p>
+            </div>
+
+            {/* 名前用の透明コンテナ */}
+            <div
+              className="absolute z-10"
               style={{
-                bottom: '15%',
-                right: '70%',
-                transform: 'translateX(50%)',
-                fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-                textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                bottom: '14.81vh',  // 160px/1080px ≈ 14.81vh
+                right: '52vw',      // 560px/1920px ≈ 29.17vw
+                width: '23vw',      // 10文字まで表示できる幅（2.08vw * 10文字 + 余白）
+                height: '5vh',     // 固定高さ（伸縮しない）
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                flexShrink: 0,      // flexでの縮小を防止
               }}
             >
-              {displayName}
-            </p>
-            <button
-              onClick={handleEmaClick}
-              className="absolute custom-outline-btn z-10"
-              style={{ top: '5%', right: '5%', minWidth: '220px' }}
-            >
-              <span className="btn-label-highlight">みんなの絵馬を見る</span>
-              <span className="btn-arrow-highlight">&gt;</span>
-            </button>
+              <p
+                className="text-black font-handwriting"
+                style={{
+                  fontSize: '2.08vw', // 約40px/1920px ≈ 2.08vw
+                  fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
+                  textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                  margin: 0,
+                  padding: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: displayName.length > 10 ? 'ellipsis' : 'clip',
+                  width: '100%',
+                  textAlign: 'left',
+                }}
+              >
+                {displayName}
+              </p>
+            </div>
+
+            {/* キャラクター画像用の透明コンテナ */}
+            {selectedCharacter && (
+              <div 
+                className="absolute z-0"
+                style={{ 
+                  bottom: '1vw',
+                  right: '25vw',
+                  width: '25vw',     // 480px/1920px = 25vw
+                  height: '60vh',    // 固定高さ（伸縮しない）
+                  overflow: 'hidden', // はみ出しを防ぐ
+                  display: 'flex',
+                  alignItems: 'flex-end',  // 底辺を基準に揃える
+                  justifyContent: 'center',
+                  flexShrink: 0,      // flexでの縮小を防止
+                }}
+              >
+                <img 
+                  src={selectedCharacter.image_path} 
+                  alt={selectedCharacter.name} 
+                  style={{ 
+                    width: '100%',
+                    height: 'auto',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    display: 'block'
+                  }}
+                />
+              </div>
+            )}
+            <AnimatePresence>
+              {showButtons && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="absolute z-10 button-container"
+                  style={{ top: '5%', right: '5%', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-end' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={handleEmaClick}
+                    className="custom-outline-btn"
+                    style={{ minWidth: '220px' }}
+                  >
+                    <span className="btn-label-highlight">みんなの絵馬を見る</span>
+                    <span className="btn-arrow-highlight">&gt;</span>
+                  </button>
+                  <a
+                    href="https://newrona.jp/melofinity"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="custom-outline-btn"
+                    style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff', minWidth: '220px' }}
+                  >
+                    <span className="btn-label-highlight">絵馬の購入はこちらから</span>
+                    <span className="btn-arrow-highlight">&gt;</span>
+                  </a>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         );
       case 7:
@@ -551,44 +667,35 @@ const App = () => {
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
           >
-            <img 
-              src="assets/everyones-ema-background.png" 
-              alt="みんなの絵馬背景" 
-              className="absolute inset-0 w-full h-full object-cover z-0 blur-sm" 
-              draggable={false}
+            <video
+              src="assets/20251031_1756_01k8wkbqvkffeavshjb7ryeyvm.mp4"
+              className="absolute inset-0 w-full h-full object-cover z-0 blur-sm"
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ filter: 'blur(8px)' }}
             />
             <div className="absolute inset-0 overflow-y-auto p-4 sm:p-6 md:p-8">
               <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
                 ～ みんなの絵馬 ～
               </h1>
-              {/* 並び替えスイッチ */}
-              <div className="flex justify-center items-center mb-4">
-                <span className="text-white mr-2 text-sm">新着順</span>
-                <button
-                  onClick={() => setSortByLikes(!sortByLikes)}
-                  className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none ${sortByLikes ? 'bg-pink-400' : 'bg-gray-300'}`}
-                  aria-label="並び替えスイッチ"
-                  style={{ minWidth: '56px' }}
+              {/* 並び替え（プルダウン） */}
+              <div className="flex justify-center items-center mb-4 gap-2">
+                <label htmlFor="sortSelect" className="text-white text-sm">並び替え</label>
+                <select
+                  id="sortSelect"
+                  value={sortByLikes ? 'likes' : 'newest'}
+                  onChange={(e) => setSortByLikes(e.target.value === 'likes')}
+                  className="px-3 py-2 rounded-md bg-white text-gray-800 shadow focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  aria-label="並び替え"
                 >
-                  <span
-                    className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${sortByLikes ? 'translate-x-7' : ''}`}
-                    style={{ transform: sortByLikes ? 'translateX(28px)' : 'none' }}
-                  ></span>
-                </button>
-                <span className="text-white ml-2 text-sm">いいね順</span>
+                  <option value="newest">新着順</option>
+                  <option value="likes">いいね順</option>
+                </select>
               </div>
-              {/* 絵馬の購入はこちらからボタンと操作ボタンをまとめて上部に表示 */}
+              {/* 操作ボタンをまとめて上部に表示 */}
               <div className="flex flex-col items-center gap-4 mb-6">
-                <a
-                  href="https://newrona.jp/melofinity"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="custom-outline-btn mx-auto mb-2"
-                  style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
-                >
-                  <span className="btn-label-highlight">絵馬の購入はこちらから</span>
-                  <span className="btn-arrow-highlight">&gt;</span>
-                </a>
                 <div className="flex flex-col sm:flex-row gap-2 justify-center">
                   <button
                     onClick={handleViewMyEmaClick}
@@ -614,9 +721,13 @@ const App = () => {
                   </div>
                 ) : (
                   allEmaList.map((ema) => (
-                    <div key={ema.id} className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent">
+                    <div 
+                      key={ema.id} 
+                      className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent cursor-pointer"
+                      onClick={() => setExpandedEma(ema)}
+                    >
                       <img 
-                        src="assets/minna_no_ema-DuqMoW9J.png" 
+                        src="assets/ema-transparent.png" 
                         alt="絵馬" 
                         className="w-full h-48 object-cover rounded-md bg-transparent"
                         style={{ backgroundColor: 'transparent' }}
@@ -632,10 +743,11 @@ const App = () => {
                              left: '50%',
                              transform: 'translate(-50%, -50%)',
                              fontSize: isMobile ? getWishFontSizeMobile(ema.wish) : getWishFontSize(ema.wish),
-                             wordBreak: 'break-word',
-                             whiteSpace: 'pre-wrap'
+                             wordBreak: 'keep-all',
+                             whiteSpace: 'pre',
+                             overflowWrap: 'normal'
                            }}>
-                          {ema.wish}
+                          {insertLineBreaks(ema.wish)}
                         </p>
                         <p className="text-sm text-black font-medium"
                            style={{
@@ -660,7 +772,7 @@ const App = () => {
                             alt={ema.character.name}
                             className="absolute w-16 h-16 object-contain"
                             style={isMobile ? { bottom: '20%', right: '-2%' } : { bottom: '4%', right: '18%' }}
-                            onError={e => { e.target.src = 'assets/character.png'; }}
+                            onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
                           />
                         )}
                         {/* いいねボタン PC表示のみ */}
@@ -669,7 +781,10 @@ const App = () => {
                             type="button"
                             className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
                             style={{ bottom: '8%', left: '8%' }}
-                            onClick={() => handleLike(ema.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLike(ema.id);
+                            }}
                             disabled={likedSet.has(ema.id)}
                             aria-label="いいね"
                           >
@@ -680,11 +795,14 @@ const App = () => {
                       </div>
                       {/* いいねボタン スマホ表示のみ（絵馬の下に独立して配置） */}
                       {isMobile && (
-                        <div className="flex justify-center mt-2">
+                        <div className="flex justify-center mt-2" onClick={(e) => e.stopPropagation()}>
                           <button
                             type="button"
                             className="flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-                            onClick={() => handleLike(ema.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLike(ema.id);
+                            }}
                             disabled={likedSet.has(ema.id)}
                             aria-label="いいね"
                           >
@@ -698,6 +816,134 @@ const App = () => {
                 )}
               </div>
             </div>
+            {/* 拡大表示モーダル */}
+            <AnimatePresence>
+              {expandedEma && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                  onClick={() => setExpandedEma(null)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-[90vw] max-w-[800px] h-[80vh] max-h-[900px]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img 
+                      src="assets/ema-transparent.png" 
+                      alt="絵馬" 
+                      className="w-full h-full object-contain"
+                    />
+                    {/* 願い事 */}
+                    <div
+                      className="absolute z-10"
+                      style={{
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '60%',
+                        maxHeight: '40%',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <p
+                        className="text-black font-handwriting text-center"
+                        style={{
+                          fontSize: 'clamp(1.7rem, 2.5vw, 1.7rem)',
+                          whiteSpace: 'pre',
+                          wordBreak: 'keep-all',
+                          fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
+                          textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                          margin: 0,
+                          padding: 0,
+                          width: '100%',
+                        }}
+                      >
+                        {insertLineBreaks(expandedEma.wish)}
+                      </p>
+                    </div>
+                    {/* 名前 */}
+                    <div
+                      className="absolute z-10"
+                      style={{
+                        bottom: '20%',
+                        right: '47%',
+                        width: '30%',
+                        maxHeight: '8%',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                      }}
+                    >
+                      <p
+                        className="text-black font-handwriting"
+                        style={{
+                          fontSize: 'clamp(1.5rem, 2vw, 1.5rem)',
+                          fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
+                          textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+                          margin: 0,
+                          padding: 0,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          width: '100%',
+                          textAlign: 'left',
+                        }}
+                      >
+                        {expandedEma.name}
+                      </p>
+                    </div>
+                    {/* キャラクター画像 */}
+                    {expandedEma.character && (
+                      <div 
+                        className="absolute z-0"
+                        style={{ 
+                          bottom: '18%',
+                          right: '18%',
+                          width: '30%',
+                          height: '50%',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <img 
+                          src={expandedEma.character.image_path} 
+                          alt={expandedEma.character.name} 
+                          style={{ 
+                            width: '70%',
+                            height: 'auto',
+                            maxHeight: '100%',
+                            objectFit: 'contain',
+                            display: 'block'
+                          }}
+                          onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
+                        />
+                      </div>
+                    )}
+                    {/* 閉じるボタン */}
+                    <button
+                      onClick={() => setExpandedEma(null)}
+                      className="absolute top-4 right-4 z-20 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold text-gray-800 shadow-lg transition-all"
+                      aria-label="閉じる"
+                    >
+                      ×
+                    </button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         );
       default:
