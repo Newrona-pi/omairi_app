@@ -318,27 +318,17 @@ const App = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: 'easeInOut' }}
             className="fixed inset-0 w-screen h-screen overflow-hidden"
+            onClick={!showWishForm ? handleSuzuClick : undefined}
           >
             <video
-              src="assets/20251031_1633_01k8wjw1m5fhyaetp8wh8sdn1f.mp4"
+              src="assets/20251105_1632_01k99etw4xe4j9681aw748nwcr.mp4"
               className="fs-img"
               autoPlay
               loop
               muted
               playsInline
             />
-            <div
-              className="absolute cursor-pointer bg-transparent"
-              onClick={handleSuzuClick}
-              style={{ 
-                top: '60%', 
-                left: '50%', 
-                width: '10%', 
-                height: '15%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 10
-              }}
-            ></div>
+            {/* 全画面クリックで鈴を鳴らす。フォーム表示後は無効化 */}
             {/* 境内画面のaudioタグ */}
             <audio ref={audioRef} src="assets/神社の鈴を鳴らす-CfX4AAZh.mp3" preload="auto" />
             {/* カラスが鳴く夕方.mp3 を自動再生 */}
@@ -369,10 +359,10 @@ const App = () => {
                     ref={inputRef}
                     className="block w-full p-2 mb-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-white text-black"
                     rows="4"
-                    placeholder="願い事を入力してください（20文字まで）..."
+                    placeholder="願い事を入力してください（30文字まで）..."
                     value={wish}
                     onChange={(e) => setWish(e.target.value)}
-                    maxLength={20}
+                    maxLength={30}
                     required
                   ></textarea>
                   <input
@@ -503,7 +493,7 @@ const App = () => {
             className="fixed inset-0 w-screen h-screen overflow-hidden"
             onClick={handleMyEmaBackgroundClick}
           >
-            <img src="assets/ema1105.png" alt="Ema" className="fs-img" />
+            <img src="assets/ema1105-2.png" alt="Ema" className="fs-img" />
             
             {/* 願い事用の透明コンテナ */}
             <div
