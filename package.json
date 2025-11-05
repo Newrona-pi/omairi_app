@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev:css": "tailwindcss -i ./src/styles.css -o ./src/tailwind.css --watch",
-    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/tailwind.css --minify",
+    "dev:css": "tailwindcss -i ./src/index.css -o ./src/tailwind.css --watch",
+    "build:css": "tailwindcss -i ./src/index.css -o ./dist/tailwind.css --minify",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
