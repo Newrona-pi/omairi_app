@@ -74,4 +74,21 @@ html, body, #root {
   font-size: 1.3em;
 }
 
+@media (max-width: 640px) {
+  html, body, #root {
+    overflow: auto;
+  }
+
+  .custom-outline-btn {
+    min-width: auto;
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .btn-label-highlight {
+    margin-right: 1em;
+  }
+}
+
 
