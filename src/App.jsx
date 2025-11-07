@@ -293,10 +293,11 @@ const App = () => {
               playsInline
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-bold animate-pulse px-4 text-center drop-shadow-lg"
-                  style={{ fontFamily: '"Yomogi", cursive' }}>
-                タイトル
-              </h1>
+              <img 
+                src="assets/推しの護符.png" 
+                alt="推しの護符" 
+                className="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain animate-pulse"
+              />
             </div>
           </div>
         );
@@ -424,7 +425,7 @@ const App = () => {
             />
             <div className="absolute inset-0 p-4 sm:p-6 md:p-8 overflow-y-auto">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
-                キャラクターを選んでください
+                推しを選んでください
               </h1>
               {/* 検索ボックス */}
               <div className="max-w-md mx-auto mb-4 sm:mb-6 md:mb-8">
