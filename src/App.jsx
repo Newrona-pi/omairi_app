@@ -31,6 +31,7 @@ const App = () => {
   const audioRef = useRef(null);
   const inputRef = useRef(null);
   const crowAudioRef = useRef(null); // カラス音声用
+  const bgmAudioRef = useRef(null); // BGM用
 
   // いいね数と自分が押したかどうかの管理
   const [likedSet, setLikedSet] = useState(new Set()); // Set of liked ema ids
@@ -48,6 +49,9 @@ const App = () => {
 
   // 拡大表示する絵馬
   const [expandedEma, setExpandedEma] = useState(null);
+
+  // BGM再生状態（useRefで管理して常に最新の値を参照）
+  const bgmStartedRef = useRef(false);
 
   // localStorageから絵馬データを読み込む
   useEffect(() => {
@@ -141,7 +145,49 @@ const App = () => {
     }
   }, [step]);
 
+  // BGMを自動再生
+  useEffect(() => {
+    if (bgmAudioRef.current) {
+      bgmAudioRef.current.volume = 0.5; // 音量を50%に設定
+      bgmAudioRef.current.loop = true; // ループ再生
+      // 自動再生を試みる
+      bgmAudioRef.current.play()
+        .then(() => {
+          bgmStartedRef.current = true;
+        })
+        .catch(e => {
+          console.log('BGM auto-play failed, will try on user interaction:', e);
+          // 自動再生が失敗した場合、ユーザーインタラクション時に再生を試みる
+          const tryPlayOnInteraction = () => {
+            if (bgmAudioRef.current && !bgmStartedRef.current) {
+              bgmAudioRef.current.volume = 0.5;
+              bgmAudioRef.current.loop = true;
+              bgmAudioRef.current.play()
+                .then(() => {
+                  bgmStartedRef.current = true;
+                  document.removeEventListener('click', tryPlayOnInteraction);
+                  document.removeEventListener('touchstart', tryPlayOnInteraction);
+                })
+                .catch(() => {});
+            }
+          };
+          document.addEventListener('click', tryPlayOnInteraction, { once: true });
+          document.addEventListener('touchstart', tryPlayOnInteraction, { once: true });
+        });
+    }
+  }, []);
+
   const handleInitialClick = () => {
+    // まだBGMが開始されていない場合、クリック時に開始を試みる
+    if (bgmAudioRef.current && !bgmStartedRef.current) {
+      bgmAudioRef.current.volume = 0.5;
+      bgmAudioRef.current.loop = true;
+      bgmAudioRef.current.play()
+        .then(() => {
+          bgmStartedRef.current = true;
+        })
+        .catch(e => console.log('BGM play failed:', e));
+    }
     setStep(2);
   };
 
@@ -285,7 +331,7 @@ const App = () => {
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
             <video
-              src="assets/20251105_1149_01k98yer6ge2mt2vtd2z1bb2p8.mp4"
+              src="assets/20251105_1610_01k99a5pnjeehv67080p2z5cg7.mp4"
               className="fs-img"
               autoPlay
               loop
@@ -432,10 +478,10 @@ const App = () => {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="キャラクター名や説明で検索..."
+                    placeholder="推しの名前で検索..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800"
+                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
                   />
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
                     🔍
@@ -451,7 +497,7 @@ const App = () => {
                 </div>
                 {searchTerm && (
                   <p className="text-white text-sm mt-2 text-center">
-                    {filteredCharacters.length}件のキャラクターが見つかりました
+                    {filteredCharacters.length}件の推し候補が見つかりました
                   </p>
                 )}
               </div>
@@ -464,7 +510,7 @@ const App = () => {
                   {filteredCharacters.length === 0 ? (
                     <div className="text-center text-white">
                       <div className="text-2xl mb-4">😔</div>
-                      <p className="text-lg mb-2">該当するキャラクターが見つかりませんでした</p>
+                      <p className="text-lg mb-2">該当する推し候補が見つかりませんでした</p>
                       <p className="text-sm opacity-80">検索キーワードを変更してお試しください</p>
                     </div>
                   ) : (
@@ -501,7 +547,7 @@ const App = () => {
         // 自分の絵馬画面
         const wishContainerStyle = isMobile
           ? {
-              top: '48%',
+              top: '60%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: '70vw',
@@ -527,7 +573,7 @@ const App = () => {
 
         const wishTextStyle = isMobile
           ? {
-              fontSize: 'clamp(1rem, 4vw, 1.4rem)',
+              fontSize: 'clamp(1rem, 8vw, 2rem)',
               textAlign: 'center',
               whiteSpace: 'pre-wrap',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
@@ -550,7 +596,7 @@ const App = () => {
         const nameContainerStyle = isMobile
           ? {
               bottom: '22vh',
-              right: '50%',
+              right: '65%',
               transform: 'translate(50%, 0)',
               width: '55vw',
               height: '6vh',
@@ -574,7 +620,7 @@ const App = () => {
 
         const nameTextStyle = isMobile
           ? {
-              fontSize: 'clamp(0.85rem, 3.8vw, 1.1rem)',
+              fontSize: 'clamp(1.1rem, 6vw, 3rem)',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
               textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
               margin: 0,
@@ -600,8 +646,8 @@ const App = () => {
 
         const characterContainerStyle = isMobile
           ? {
-              bottom: '6vh',
-              right: '12vw',
+              bottom: '24vh',
+              right: '4vw',
               width: '32vw',
               height: '35vh',
               overflow: 'hidden',
@@ -653,7 +699,11 @@ const App = () => {
             className={`fixed inset-0 w-screen h-screen ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}
             onClick={handleMyEmaBackgroundClick}
           >
-            <img src="assets/ema1105-2.png" alt="Ema" className="fs-img" />
+            <img 
+              src={isMobile ? "assets/ema-portrait.png" : "assets/ema1105-2.png"} 
+              alt="Ema" 
+              className="fs-img" 
+            />
 
             {/* 願い事用の透明コンテナ */}
             <div
@@ -853,7 +903,7 @@ const App = () => {
                              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
                              position: 'absolute',
                              bottom: isMobile ? '18%' : '10%',
-                             right: isMobile ? '50%' : '65%',
+                             right: isMobile ? '80%' : '65%',
                              transform: isMobile ? 'translate(50%, 0)' : 'translateX(50%)',
                              fontSize: getNameFontSize(ema.name),
                              maxWidth: '60%',
@@ -868,8 +918,8 @@ const App = () => {
                           <img
                             src={ema.character.image_path}
                             alt={ema.character.name}
-                            className="absolute w-16 h-16 object-contain"
-                            style={isMobile ? { bottom: '10%', right: '12%' } : { bottom: '4%', right: '18%' }}
+                            className="absolute w-20 h-28 object-contain"
+                            style={isMobile ? { bottom: '15%', right: '12%' } : { bottom: '4%', right: '18%' }}
                             onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
                           />
                         )}
@@ -956,7 +1006,7 @@ const App = () => {
                       <p
                         className="text-black font-handwriting text-center"
                         style={{
-                          fontSize: 'clamp(1.7rem, 2.5vw, 1.7rem)',
+                          fontSize: 'clamp(1.2rem, 2.8vw, 3rem)',
                           whiteSpace: 'pre',
                           wordBreak: 'keep-all',
                           fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
@@ -973,7 +1023,7 @@ const App = () => {
                     <div
                       className="absolute z-10"
                       style={{
-                        bottom: '20%',
+                        bottom: '35%',
                         right: '47%',
                         width: '30%',
                         maxHeight: '8%',
@@ -986,7 +1036,7 @@ const App = () => {
                       <p
                         className="text-black font-handwriting"
                         style={{
-                          fontSize: 'clamp(1.5rem, 2vw, 1.5rem)',
+                          fontSize: 'clamp(1rem, 2vw, 1.5rem)',
                           fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
                           textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
                           margin: 0,
@@ -1006,8 +1056,8 @@ const App = () => {
                       <div 
                         className="absolute z-0"
                         style={{ 
-                          bottom: '18%',
-                          right: '18%',
+                          bottom: '35%',
+                          right: '8%',
                           width: '30%',
                           height: '50%',
                           overflow: 'hidden',
@@ -1050,18 +1100,22 @@ const App = () => {
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        key={step}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.6, ease: 'easeInOut' }}
-        className="fixed inset-0 w-screen h-screen"
-      >
-        {renderContent()}
-      </motion.div>
-    </AnimatePresence>
+    <>
+      {/* BGM - AnimatePresenceの外に配置して常に存在させる */}
+      <audio ref={bgmAudioRef} src="assets/夢の小舟.mp3" preload="auto" autoPlay loop muted={false} />
+      <AnimatePresence>
+        <motion.div
+          key={step}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
+          className="fixed inset-0 w-screen h-screen"
+        >
+          {renderContent()}
+        </motion.div>
+      </AnimatePresence>
+    </>
   );
 };
 
