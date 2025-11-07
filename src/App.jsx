@@ -385,7 +385,7 @@ const App = () => {
             <audio ref={audioRef} src="assets/神社の鈴を鳴らす-CfX4AAZh.mp3" preload="auto" />
             {/* カラスが鳴く夕方.mp3 を自動再生 */}
             <audio ref={crowAudioRef} src="assets/カラスが鳴く夕方.mp3" preload="auto" />
-            {showWishForm && (
+            {showWishForm && !isMobile && (
               <div className="fixed inset-0 flex justify-center items-end pointer-events-none z-0 pb-3">
                 <motion.img
                   src="assets/minna_no_ema-DuqMoW9J.png"
@@ -828,19 +828,25 @@ const App = () => {
               <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
                 ～ みんなの絵馬 ～
               </h1>
-              {/* 並び替え（プルダウン） */}
-              <div className="flex justify-center items-center mb-4 gap-2">
-                <label htmlFor="sortSelect" className="text-white text-sm">並び替え</label>
-                <select
-                  id="sortSelect"
-                  value={sortByLikes ? 'likes' : 'newest'}
-                  onChange={(e) => setSortByLikes(e.target.value === 'likes')}
-                  className="px-3 py-2 rounded-md bg-white text-gray-800 shadow focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  aria-label="並び替え"
+              {/* 並び替え（トグルスイッチ） */}
+              <div className="flex justify-center items-center mb-4 gap-3">
+                <span className="text-white text-sm">新着順</span>
+                <button
+                  onClick={() => setSortByLikes(!sortByLikes)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
+                    sortByLikes ? 'bg-red-600' : 'bg-gray-300'
+                  }`}
+                  role="switch"
+                  aria-checked={sortByLikes}
+                  aria-label="並び替え切り替え"
                 >
-                  <option value="newest">新着順</option>
-                  <option value="likes">いいね順</option>
-                </select>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      sortByLikes ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+                <span className="text-white text-sm">いいね順</span>
               </div>
               {/* 操作ボタンをまとめて上部に表示 */}
               <div className="flex flex-col items-center gap-4 mb-6">
