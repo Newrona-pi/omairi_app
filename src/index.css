@@ -43,7 +43,7 @@ html, body, #root {
   padding: 0.75rem 0.75rem 0.75rem 1.5rem;
   font-size: 1.25rem;
   font-weight: bold;
-  color: #d18a2a;
+  color: #dc2626;
   border: 2px solid #dfdadb;
   background: transparent;
   border-radius: 0;
@@ -54,13 +54,13 @@ html, body, #root {
   min-width: 220px;
 }
 .custom-outline-btn:active, .custom-outline-btn:focus {
-  background: #fff7e6;
+  background: #fee2e2;
   outline: none;
 }
 .custom-outline-btn:hover {
   background: #dfdadb;
-  color: #d18a2a;
-  border-color: #d18a2a;
+  color: #dc2626;
+  border-color: #dc2626;
 }
 
 .btn-label-highlight {

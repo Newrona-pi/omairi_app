@@ -107,10 +107,10 @@ const App = () => {
         console.error('CSVファイルの読み込みに失敗しました:', error);
         // フォールバック: デフォルトのキャラクター
         setCharacters([
-          { id: 1, name: 'そらねなご', image_path: 'new-png-assets/01_そらねなご.png', description: 'そらねなご' },
-          { id: 2, name: '天輪ちゃちゃ', image_path: 'new-png-assets/02_天輪ちゃちゃ.png', description: '天輪ちゃちゃ' },
-          { id: 3, name: '熊蜂えま', image_path: 'new-png-assets/03_熊蜂えま.png', description: '熊蜂えま' },
-          { id: 4, name: 'ラビスベレイ', image_path: 'new-png-assets/04_ラビスベレイ.png', description: 'ラビスベレイ' }
+          { id: 1, name: 'そらねなご', image_path: 'new-png-assets2/01_そらねなご.png', description: 'そらねなご' },
+          { id: 2, name: '天輪ちゃちゃ', image_path: 'new-png-assets2/02_天輪ちゃちゃ.png', description: '天輪ちゃちゃ' },
+          { id: 3, name: '熊蜂えま', image_path: 'new-png-assets2/03_熊蜂えま.png', description: '熊蜂えま' },
+          { id: 4, name: 'ラビスベレイ', image_path: 'new-png-assets2/04_ラビスベレイ.png', description: 'ラビスベレイ' }
         ]);
         setLoading(false);
       }
@@ -383,7 +383,7 @@ const App = () => {
         return (
           <div className="fixed inset-0 w-screen h-screen overflow-hidden" onClick={handleInitialClick}>
             <video
-              src="assets/20251105_1149_01k98yer6ge2mt2vtd2z1bb2p8.mp4"
+              src="assets/20251105_1610_01k99a5pnjeehv67080p2z5cg7.mp4"
               className="fs-img"
               autoPlay
               loop
@@ -391,10 +391,11 @@ const App = () => {
               playsInline
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <h1 className="text-white text-2xl sm:text-4xl md:text-5xl font-bold animate-pulse px-4 text-center drop-shadow-lg"
-                  style={{ fontFamily: '"Yomogi", cursive' }}>
-                タイトル
-              </h1>
+              <img 
+                src="assets/推しの護符.png" 
+                alt="推しの護符" 
+                className="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain animate-pulse"
+              />
             </div>
           </div>
         );
@@ -436,7 +437,7 @@ const App = () => {
             <audio ref={audioRef} src="assets/神社の鈴を鳴らす-CfX4AAZh.mp3" preload="auto" />
             {/* カラスが鳴く夕方.mp3 を自動再生 */}
             <audio ref={crowAudioRef} src="assets/カラスが鳴く夕方.mp3" preload="auto" />
-            {showWishForm && (
+            {showWishForm && !isMobile && (
               <div className="fixed inset-0 flex justify-center items-end pointer-events-none z-0 pb-3">
                 <motion.img
                   src="assets/minna_no_ema-DuqMoW9J.png"
@@ -522,17 +523,17 @@ const App = () => {
             />
             <div className="absolute inset-0 p-4 sm:p-6 md:p-8 overflow-y-auto">
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
-                キャラクターを選んでください
+                推しを選んでください
               </h1>
               {/* 検索ボックス */}
               <div className="max-w-md mx-auto mb-4 sm:mb-6 md:mb-8">
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="キャラクター名や説明で検索..."
+                    placeholder="推しの名前で検索..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-800"
+                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
                   />
                   <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
                     🔍
@@ -548,7 +549,7 @@ const App = () => {
                 </div>
                 {searchTerm && (
                   <p className="text-white text-sm mt-2 text-center">
-                    {filteredCharacters.length}件のキャラクターが見つかりました
+                    {filteredCharacters.length}件の推し候補が見つかりました
                   </p>
                 )}
               </div>
@@ -561,7 +562,7 @@ const App = () => {
                   {filteredCharacters.length === 0 ? (
                     <div className="text-center text-white">
                       <div className="text-2xl mb-4">😔</div>
-                      <p className="text-lg mb-2">該当するキャラクターが見つかりませんでした</p>
+                      <p className="text-lg mb-2">該当する推し候補が見つかりませんでした</p>
                       <p className="text-sm opacity-80">検索キーワードを変更してお試しください</p>
                     </div>
                   ) : (
@@ -578,7 +579,7 @@ const App = () => {
                               alt={character.name}
                               className="h-full w-full object-contain"
                               onError={(e) => {
-                                e.target.src = 'new-png-assets/01_そらねなご.png'; // フォールバック画像
+                                e.target.src = 'new-png-assets2/01_そらねなご.png'; // フォールバック画像
                               }}
                             />
                           </div>
@@ -901,19 +902,25 @@ const App = () => {
               <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
                 ～ みんなの絵馬 ～
               </h1>
-              {/* 並び替え（プルダウン） */}
-              <div className="flex justify-center items-center mb-4 gap-2">
-                <label htmlFor="sortSelect" className="text-white text-sm">並び替え</label>
-                <select
-                  id="sortSelect"
-                  value={sortByLikes ? 'likes' : 'newest'}
-                  onChange={(e) => setSortByLikes(e.target.value === 'likes')}
-                  className="px-3 py-2 rounded-md bg-white text-gray-800 shadow focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  aria-label="並び替え"
+              {/* 並び替え（トグルスイッチ） */}
+              <div className="flex justify-center items-center mb-4 gap-3">
+                <span className="text-white text-sm">新着順</span>
+                <button
+                  onClick={() => setSortByLikes(!sortByLikes)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
+                    sortByLikes ? 'bg-red-600' : 'bg-gray-300'
+                  }`}
+                  role="switch"
+                  aria-checked={sortByLikes}
+                  aria-label="並び替え切り替え"
                 >
-                  <option value="newest">新着順</option>
-                  <option value="likes">いいね順</option>
-                </select>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      sortByLikes ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+                <span className="text-white text-sm">いいね順</span>
               </div>
               {/* 操作ボタンをまとめて上部に表示 */}
               <div className="flex flex-col items-center gap-4 mb-6">
@@ -1079,7 +1086,7 @@ const App = () => {
                       <p
                         className="text-black font-handwriting text-center"
                         style={{
-                          fontSize: 'clamp(1.7rem, 2.5vw, 1.7rem)',
+                          fontSize: 'clamp(1.2rem, 2.8vw, 3rem)',
                           whiteSpace: 'pre',
                           wordBreak: 'keep-all',
                           fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
@@ -1096,7 +1103,7 @@ const App = () => {
                     <div
                       className="absolute z-10"
                       style={{
-                        bottom: '20%',
+                        bottom: '35%',
                         right: '47%',
                         width: '30%',
                         maxHeight: '8%',
@@ -1109,7 +1116,7 @@ const App = () => {
                       <p
                         className="text-black font-handwriting"
                         style={{
-                          fontSize: 'clamp(1.5rem, 2vw, 1.5rem)',
+                          fontSize: 'clamp(1rem, 2vw, 1.5rem)',
                           fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
                           textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
                           margin: 0,
@@ -1129,8 +1136,8 @@ const App = () => {
                       <div 
                         className="absolute z-0"
                         style={{ 
-                          bottom: '18%',
-                          right: '18%',
+                          bottom: '35%',
+                          right: '8%',
                           width: '30%',
                           height: '50%',
                           overflow: 'hidden',
@@ -1149,7 +1156,7 @@ const App = () => {
                             objectFit: 'contain',
                             display: 'block'
                           }}
-                          onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
+                          onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
                         />
                       </div>
                     )}
