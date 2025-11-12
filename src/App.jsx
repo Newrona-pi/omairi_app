@@ -91,14 +91,40 @@ const App = () => {
         const lines = csvText.split('\n');
         const headers = lines[0].split(',');
         
+        // CSVパース処理を改善（カンマ区切りを正しく処理）
+        const parseCSVLine = (line) => {
+          const result = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              result.push(current);
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          result.push(current);
+          return result;
+        };
+        
         const characterData = lines.slice(1).filter(line => line.trim()).map(line => {
-          const values = line.split(',');
-          return {
+          const values = parseCSVLine(line);
+          const character = {
             id: parseInt(values[0]),
             name: values[1],
             image_path: values[2],
             description: values[3]
           };
+          // デバッグ: 31番のキャラクターをログ出力
+          if (character.id === 31) {
+            console.log('31番キャラクター:', character);
+          }
+          return character;
         });
         
         setCharacters(characterData);
@@ -527,7 +553,13 @@ const App = () => {
                               alt={character.name}
                               className="h-full w-full object-contain"
                               onError={(e) => {
-                                e.target.src = 'new-png-assets2/01_そらねなご.png'; // フォールバック画像
+                                console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
+                                e.target.style.display = 'none'; // 画像を非表示
+                              }}
+                              onLoad={() => {
+                                if (character.id === 31) {
+                                  console.log(`31番画像読み込み成功: ${character.image_path}`);
+                                }
                               }}
                             />
                           </div>
@@ -926,7 +958,7 @@ const App = () => {
                             alt={ema.character.name}
                             className="absolute w-20 h-28 object-contain"
                             style={isMobile ? { bottom: '15%', right: '12%' } : { bottom: '4%', right: '18%' }}
-                            onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
+                            onError={e => { e.target.style.display = 'none'; }}
                           />
                         )}
                         {/* いいねボタン PC表示のみ */}
