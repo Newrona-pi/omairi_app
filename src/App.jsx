@@ -107,10 +107,10 @@ const App = () => {
         console.error('CSVファイルの読み込みに失敗しました:', error);
         // フォールバック: デフォルトのキャラクター
         setCharacters([
-          { id: 1, name: 'そらねなご', image_path: 'new-png-assets/01_そらねなご.png', description: 'そらねなご' },
-          { id: 2, name: '天輪ちゃちゃ', image_path: 'new-png-assets/02_天輪ちゃちゃ.png', description: '天輪ちゃちゃ' },
-          { id: 3, name: '熊蜂えま', image_path: 'new-png-assets/03_熊蜂えま.png', description: '熊蜂えま' },
-          { id: 4, name: 'ラビスベレイ', image_path: 'new-png-assets/04_ラビスベレイ.png', description: 'ラビスベレイ' }
+          { id: 1, name: 'そらねなご', image_path: 'new-png-assets2/01_そらねなご.png', description: 'そらねなご' },
+          { id: 2, name: '天輪ちゃちゃ', image_path: 'new-png-assets2/02_天輪ちゃちゃ.png', description: '天輪ちゃちゃ' },
+          { id: 3, name: '熊蜂えま', image_path: 'new-png-assets2/03_熊蜂えま.png', description: '熊蜂えま' },
+          { id: 4, name: 'ラビスベレイ', image_path: 'new-png-assets2/04_ラビスベレイ.png', description: 'ラビスベレイ' }
         ]);
         setLoading(false);
       }
@@ -527,7 +527,7 @@ const App = () => {
                               alt={character.name}
                               className="h-full w-full object-contain"
                               onError={(e) => {
-                                e.target.src = 'new-png-assets/01_そらねなご.png'; // フォールバック画像
+                                e.target.src = 'new-png-assets2/01_そらねなご.png'; // フォールバック画像
                               }}
                             />
                           </div>
@@ -926,7 +926,7 @@ const App = () => {
                             alt={ema.character.name}
                             className="absolute w-20 h-28 object-contain"
                             style={isMobile ? { bottom: '15%', right: '12%' } : { bottom: '4%', right: '18%' }}
-                            onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
+                            onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
                           />
                         )}
                         {/* いいねボタン PC表示のみ */}
@@ -1082,7 +1082,7 @@ const App = () => {
                             objectFit: 'contain',
                             display: 'block'
                           }}
-                          onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
+                          onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
                         />
                       </div>
                     )}
