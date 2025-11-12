@@ -545,127 +545,135 @@ const App = () => {
         );
       case 6:
         // 自分の絵馬画面
-        const wishContainerStyle = isMobile
+        const emaContainerStyle = isMobile
           ? {
-              top: '60%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '70vw',
-              height: '28vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
+              width: 'min(92vw, calc(92vh * 1.5))',
+              maxWidth: '640px',
+              aspectRatio: '3 / 2'
             }
           : {
-              top: '50%',
+              width: 'min(80vw, calc(80vh * 1.5))',
+              maxWidth: '960px',
+              aspectRatio: '3 / 2'
+            };
+
+        const wishContainerStyle = isMobile
+          ? {
+              top: '48%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '41.67vw',
-              height: '30vh',
+              width: '68%',
+              height: '36%',
+              padding: '3% 4%',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
+              justifyContent: 'center'
+            }
+          : {
+              top: '46%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '56%',
+              height: '34%',
+              padding: '3% 5%',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             };
 
         const wishTextStyle = isMobile
           ? {
-              fontSize: 'clamp(1rem, 8vw, 2rem)',
+              fontSize: 'clamp(1.05rem, 4.8vw, 1.6rem)',
+              lineHeight: 1.4,
               textAlign: 'center',
               whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+              textShadow: '2px 2px 4px rgba(255,255,255,0.85)',
               margin: 0,
-              padding: 0,
               width: '100%'
             }
           : {
-              fontSize: '2.6vw',
+              fontSize: 'clamp(1.2rem, 2.7vw, 2.3rem)',
+              lineHeight: 1.45,
               textAlign: 'center',
               whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+              textShadow: '2px 2px 4px rgba(255,255,255,0.85)',
               margin: 0,
-              padding: 0,
               width: '100%'
             };
 
         const nameContainerStyle = isMobile
           ? {
-              bottom: '22vh',
-              right: '65%',
-              transform: 'translate(50%, 0)',
-              width: '55vw',
-              height: '6vh',
-              overflow: 'hidden',
+              bottom: '26%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '56%',
+              height: '10%',
+              padding: '0 6%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
-              flexShrink: 0
+              overflow: 'hidden'
             }
           : {
-              bottom: '14.81vh',
-              right: '52vw',
-              width: '23vw',
-              height: '5vh',
-              overflow: 'hidden',
+              bottom: '22%',
+              left: '26%',
+              width: '24%',
+              height: '10%',
+              padding: '0 6%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
-              flexShrink: 0
+              overflow: 'hidden'
             };
 
         const nameTextStyle = isMobile
           ? {
-              fontSize: 'clamp(1.1rem, 6vw, 3rem)',
+              fontSize: 'clamp(0.95rem, 3.5vw, 1.25rem)',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+              textShadow: '2px 2px 4px rgba(255,255,255,0.85)',
               margin: 0,
-              padding: 0,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: displayName.length > 10 ? 'ellipsis' : 'clip',
-              width: '100%',
-              textAlign: 'left'
+              width: '100%'
             }
           : {
-              fontSize: '2.08vw',
+              fontSize: 'clamp(1rem, 1.8vw, 1.6rem)',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
+              textShadow: '2px 2px 4px rgba(255,255,255,0.85)',
               margin: 0,
-              padding: 0,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: displayName.length > 10 ? 'ellipsis' : 'clip',
-              width: '100%',
-              textAlign: 'left'
+              width: '100%'
             };
 
         const characterContainerStyle = isMobile
           ? {
-              bottom: '24vh',
-              right: '4vw',
-              width: '32vw',
-              height: '35vh',
-              overflow: 'hidden',
+              bottom: '8%',
+              right: '16%',
+              width: '36%',
+              height: '44%',
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
-              flexShrink: 0
+              overflow: 'hidden'
             }
           : {
-              bottom: '1vw',
-              right: '23vw',
-              width: '25vw',
-              height: '60vh',
-              overflow: 'hidden',
+              bottom: '6%',
+              right: '14%',
+              width: '30%',
+              height: '50%',
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
-              flexShrink: 0
+              overflow: 'hidden'
             };
 
         const buttonContainerStyle = isMobile
@@ -699,57 +707,42 @@ const App = () => {
             className={`fixed inset-0 w-screen h-screen ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}
             onClick={handleMyEmaBackgroundClick}
           >
-            <img 
-              src={isMobile ? "assets/ema-portrait.png" : "assets/ema1105-2.png"} 
-              alt="Ema" 
-              className="fs-img" 
-            />
-
-            {/* 願い事用の透明コンテナ */}
-            <div
-              className="absolute z-10"
-              style={wishContainerStyle}
-            >
-              <p
-                className="text-black font-handwriting"
-                style={wishTextStyle}
-              >
-                {insertLineBreaks(displayWish)}
-              </p>
-            </div>
-
-            {/* 名前用の透明コンテナ */}
-            <div
-              className="absolute z-10"
-              style={nameContainerStyle}
-            >
-              <p
-                className="text-black font-handwriting"
-                style={nameTextStyle}
-              >
-                {displayName}
-              </p>
-            </div>
-
-            {/* キャラクター画像用の透明コンテナ */}
-            {selectedCharacter && (
-              <div
-                className="absolute z-0"
-                style={characterContainerStyle}
-              >
+            <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 py-10 sm:py-12">
+              <div className="relative" style={emaContainerStyle}>
                 <img
-                  src={selectedCharacter.image_path}
-                  alt={selectedCharacter.name}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    display: 'block'
-                  }}
+                  src="assets/ema1105-2.png"
+                  alt="Ema"
+                  className="absolute inset-0 w-full h-full object-contain select-none"
+                  draggable={false}
                 />
+
+                {/* 願い事用の透明コンテナ */}
+                <div className="absolute z-10" style={wishContainerStyle}>
+                  <p className="text-black font-handwriting" style={wishTextStyle}>
+                    {insertLineBreaks(displayWish)}
+                  </p>
+                </div>
+
+                {/* 名前用の透明コンテナ */}
+                <div className="absolute z-10" style={nameContainerStyle}>
+                  <p className="text-black font-handwriting" style={nameTextStyle}>
+                    {displayName}
+                  </p>
+                </div>
+
+                {/* キャラクター画像用の透明コンテナ */}
+                {selectedCharacter && (
+                  <div className="absolute z-0" style={characterContainerStyle}>
+                    <img
+                      src={selectedCharacter.image_path}
+                      alt={selectedCharacter.name}
+                      className="w-full h-full object-contain select-none"
+                      draggable={false}
+                    />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
             <AnimatePresence>
               {showButtons && (
                 <motion.div
@@ -909,7 +902,7 @@ const App = () => {
                              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
                              position: 'absolute',
                              bottom: isMobile ? '18%' : '10%',
-                             right: isMobile ? '80%' : '65%',
+                             right: isMobile ? '50%' : '65%',
                              transform: isMobile ? 'translate(50%, 0)' : 'translateX(50%)',
                              fontSize: getNameFontSize(ema.name),
                              maxWidth: '60%',
@@ -924,9 +917,9 @@ const App = () => {
                           <img
                             src={ema.character.image_path}
                             alt={ema.character.name}
-                            className="absolute w-20 h-28 object-contain"
-                            style={isMobile ? { bottom: '15%', right: '12%' } : { bottom: '4%', right: '18%' }}
-                            onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
+                            className="absolute w-16 h-16 object-contain"
+                            style={isMobile ? { bottom: '10%', right: '12%' } : { bottom: '4%', right: '18%' }}
+                            onError={e => { e.target.src = 'new-png-assets/01_そらねなご.png'; }}
                           />
                         )}
                         {/* いいねボタン PC表示のみ */}
