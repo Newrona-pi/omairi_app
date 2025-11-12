@@ -147,46 +147,46 @@ const App = () => {
 
   // BGMを自動再生
   useEffect(() => {
-    if (bgmAudioRef.current) {
-      bgmAudioRef.current.volume = 0.5; // 音量を50%に設定
-      bgmAudioRef.current.loop = true; // ループ再生
-      // 自動再生を試みる
-      bgmAudioRef.current.play()
+    const audio = bgmAudioRef.current;
+    if (!audio) return;
+
+    const tryPlayOnInteraction = () => {
+      if (!bgmAudioRef.current || bgmStartedRef.current) return;
+      bgmAudioRef.current.volume = 0.5;
+      bgmAudioRef.current.loop = true;
+      bgmAudioRef.current
+        .play()
         .then(() => {
           bgmStartedRef.current = true;
+          document.removeEventListener('click', tryPlayOnInteraction);
+          document.removeEventListener('touchstart', tryPlayOnInteraction);
         })
-        .catch(e => {
-          console.log('BGM auto-play failed, will try on user interaction:', e);
-          // 自動再生が失敗した場合、ユーザーインタラクション時に再生を試みる
-          const tryPlayOnInteraction = () => {
-            if (bgmAudioRef.current && !bgmStartedRef.current) {
-              bgmAudioRef.current.volume = 0.5;
-              bgmAudioRef.current.loop = true;
-              bgmAudioRef.current.play()
-                .then(() => {
-                  bgmStartedRef.current = true;
-                  document.removeEventListener('click', tryPlayOnInteraction);
-                  document.removeEventListener('touchstart', tryPlayOnInteraction);
-                })
-                .catch(() => {});
-            }
-          };
-          document.addEventListener('click', tryPlayOnInteraction, { once: true });
-          document.addEventListener('touchstart', tryPlayOnInteraction, { once: true });
-        });
-    }
+        .catch(() => {});
+    };
+
+    audio.volume = 0.5;
+    audio.loop = true;
+    audio
+      .play()
+      .then(() => {
+        bgmStartedRef.current = true;
+      })
+      .catch(() => {
+        document.addEventListener('click', tryPlayOnInteraction, { once: true });
+        document.addEventListener('touchstart', tryPlayOnInteraction, { once: true });
+      });
+
+    return () => {
+      document.removeEventListener('click', tryPlayOnInteraction);
+      document.removeEventListener('touchstart', tryPlayOnInteraction);
+    };
   }, []);
 
   const handleInitialClick = () => {
-    // まだBGMが開始されていない場合、クリック時に開始を試みる
     if (bgmAudioRef.current && !bgmStartedRef.current) {
       bgmAudioRef.current.volume = 0.5;
       bgmAudioRef.current.loop = true;
-      bgmAudioRef.current.play()
-        .then(() => {
-          bgmStartedRef.current = true;
-        })
-        .catch(e => console.log('BGM play failed:', e));
+      bgmAudioRef.current.play().catch(() => {});
     }
     setStep(2);
   };
@@ -313,6 +313,58 @@ const App = () => {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const getViewportSize = () => {
+    if (typeof window === 'undefined') {
+      return { width: 1920, height: 1080 };
+    }
+    return { width: window.innerWidth, height: window.innerHeight };
+  };
+
+  const [viewportSize, setViewportSize] = useState(() => getViewportSize());
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportSize(getViewportSize());
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const isPortraitViewport = viewportSize.height >= viewportSize.width;
+
+  const [emaImageInfo, setEmaImageInfo] = useState(() =>
+    isPortraitViewport
+      ? { width: 1200, height: 1800 }
+      : { width: 1800, height: 1200 }
+  );
+
+  useEffect(() => {
+    const img = new Image();
+    const src = isPortraitViewport
+      ? 'assets/ema-portrait.png'
+      : 'assets/ema1105-2.png';
+
+    const handleLoad = () => {
+      setEmaImageInfo({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+
+    img.addEventListener('load', handleLoad);
+    img.src = src;
+
+    if (img.complete && img.naturalWidth) {
+      handleLoad();
+    }
+
+    return () => {
+      img.removeEventListener('load', handleLoad);
+    };
+  }, [isPortraitViewport]);
 
   // スマホ用：文字数に応じてフォントサイズを返す関数
   const getWishFontSizeMobile = (wish) => {
@@ -545,26 +597,51 @@ const App = () => {
         );
       case 6:
         // 自分の絵馬画面
-        const emaContainerStyle = isMobile
-          ? {
-              width: 'min(92vw, calc(92vh * 1.5))',
-              maxWidth: '640px',
-              aspectRatio: '3 / 2'
-            }
-          : {
-              width: 'min(80vw, calc(80vh * 1.5))',
-              maxWidth: '960px',
-              aspectRatio: '3 / 2'
-            };
+        const emaImageSrc = isPortraitViewport
+          ? 'assets/ema-portrait.png'
+          : 'assets/ema1105-2.png';
 
-        const wishContainerStyle = isMobile
+        const imageAspect = emaImageInfo.width && emaImageInfo.height
+          ? emaImageInfo.width / emaImageInfo.height
+          : isPortraitViewport
+            ? 2 / 3
+            : 3 / 2;
+
+        const viewportAspect = viewportSize.width / viewportSize.height;
+
+        let renderedWidth = viewportSize.width;
+        let renderedHeight = viewportSize.height;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        if (viewportAspect > imageAspect) {
+          renderedWidth = viewportSize.width;
+          renderedHeight = renderedWidth / imageAspect;
+          offsetY = (renderedHeight - viewportSize.height) / 2;
+        } else {
+          renderedHeight = viewportSize.height;
+          renderedWidth = renderedHeight * imageAspect;
+          offsetX = (renderedWidth - viewportSize.width) / 2;
+        }
+
+        const emaContainerStyle = {
+          position: 'absolute',
+          top: -offsetY,
+          left: -offsetX,
+          width: renderedWidth,
+          height: renderedHeight
+        };
+
+        const usePortraitLayout = isPortraitViewport;
+
+        const wishContainerStyle = usePortraitLayout
           ? {
-              top: '48%',
+              top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '68%',
-              height: '36%',
-              padding: '3% 4%',
+              width: '72%',
+              height: '40%',
+              padding: '4% 6%',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
@@ -583,9 +660,9 @@ const App = () => {
               justifyContent: 'center'
             };
 
-        const wishTextStyle = isMobile
+        const wishTextStyle = usePortraitLayout
           ? {
-              fontSize: 'clamp(1.05rem, 4.8vw, 1.6rem)',
+              fontSize: 'clamp(1.1rem, 5.4vw, 2rem)',
               lineHeight: 1.4,
               textAlign: 'center',
               whiteSpace: 'pre-wrap',
@@ -607,17 +684,17 @@ const App = () => {
               width: '100%'
             };
 
-        const nameContainerStyle = isMobile
+        const nameContainerStyle = usePortraitLayout
           ? {
-              bottom: '26%',
+              bottom: '24%',
               left: '50%',
               transform: 'translateX(-50%)',
-              width: '56%',
-              height: '10%',
-              padding: '0 6%',
+              width: '60%',
+              height: '11%',
+              padding: '0 8%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-start',
+              justifyContent: 'center',
               overflow: 'hidden'
             }
           : {
@@ -632,12 +709,13 @@ const App = () => {
               overflow: 'hidden'
             };
 
-        const nameTextStyle = isMobile
+        const nameTextStyle = usePortraitLayout
           ? {
-              fontSize: 'clamp(0.95rem, 3.5vw, 1.25rem)',
+              fontSize: 'clamp(1rem, 3.8vw, 1.6rem)',
               fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
               textShadow: '2px 2px 4px rgba(255,255,255,0.85)',
               margin: 0,
+              textAlign: 'center',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: displayName.length > 10 ? 'ellipsis' : 'clip',
@@ -654,12 +732,12 @@ const App = () => {
               width: '100%'
             };
 
-        const characterContainerStyle = isMobile
+        const characterContainerStyle = usePortraitLayout
           ? {
-              bottom: '8%',
-              right: '16%',
-              width: '36%',
-              height: '44%',
+              bottom: '10%',
+              right: '12%',
+              width: '32%',
+              height: '38%',
               display: 'flex',
               alignItems: 'flex-end',
               justifyContent: 'center',
@@ -707,15 +785,18 @@ const App = () => {
             className={`fixed inset-0 w-screen h-screen ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}
             onClick={handleMyEmaBackgroundClick}
           >
-            <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 py-10 sm:py-12">
+            <div className="absolute inset-0 overflow-hidden">
+              <img
+                src={emaImageSrc}
+                alt="Ema"
+                draggable={false}
+                className="select-none"
+                style={{
+                  ...emaContainerStyle,
+                  objectFit: 'contain'
+                }}
+              />
               <div className="relative" style={emaContainerStyle}>
-                <img
-                  src="assets/ema1105-2.png"
-                  alt="Ema"
-                  className="absolute inset-0 w-full h-full object-contain select-none"
-                  draggable={false}
-                />
-
                 {/* 願い事用の透明コンテナ */}
                 <div className="absolute z-10" style={wishContainerStyle}>
                   <p className="text-black font-handwriting" style={wishTextStyle}>
@@ -1101,7 +1182,7 @@ const App = () => {
   return (
     <>
       {/* BGM - AnimatePresenceの外に配置して常に存在させる */}
-      <audio ref={bgmAudioRef} src="assets/夢の小舟.mp3" preload="auto" autoPlay loop muted={false} />
+      <audio ref={bgmAudioRef} src="assets/夢の小舟.mp3" preload="auto" loop />
       <AnimatePresence>
         <motion.div
           key={step}
