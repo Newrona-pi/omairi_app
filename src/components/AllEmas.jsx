@@ -129,10 +129,19 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
   const emaImageRef = useRef(null);
   const emaImageSize = useEmaImageSize(emaImageRef, 7);
   const [characterImageAspectRatio, setCharacterImageAspectRatio] = useState(null);
+  const [characterImageLoaded, setCharacterImageLoaded] = useState(false);
+  const [emaImageLoaded, setEmaImageLoaded] = useState(false);
 
   useEffect(() => {
     setCharacterImageAspectRatio(null);
+    setCharacterImageLoaded(false);
   }, [ema.character?.id]);
+
+  useEffect(() => {
+    if (emaImageRef.current?.complete) {
+      setEmaImageLoaded(true);
+    }
+  }, []);
 
   const getWishFontSize = () => {
     if (emaImageSize.width === 0) return isMobile ? '0.95rem' : '1rem';
@@ -242,9 +251,15 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
         src="assets/ema-transparent.png"
         alt="絵馬"
         className="w-full h-48 object-cover rounded-md bg-transparent"
-        style={{ backgroundColor: 'transparent' }}
+        style={{ 
+          backgroundColor: 'transparent',
+          willChange: 'transform',
+          transform: 'translateZ(0)'
+        }}
+        loading="eager"
+        onLoad={() => setEmaImageLoaded(true)}
       />
-      {emaImageSize.width > 0 && (
+      {emaImageSize.width > 0 && emaImageLoaded && (
         <div className="absolute inset-0 p-4 pointer-events-none">
           {/* 願い事テキスト領域 */}
           <div
@@ -252,14 +267,15 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
             style={{
               top: isMobile ? '47%' : '57%',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              transform: 'translate(-50%, -50%) translateZ(0)',
               width: isMobile ? '72%' : '75%',
               height: '28%',
               overflow: 'hidden',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexShrink: 0
+              flexShrink: 0,
+              willChange: 'transform'
             }}
           >
             <p
@@ -290,7 +306,9 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-start',
-              flexShrink: 0
+              flexShrink: 0,
+              willChange: 'transform',
+              transform: 'translateZ(0)'
             }}
           >
             <p
@@ -313,7 +331,14 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
           </div>
           {/* キャラクター画像領域 */}
           {ema.character && (
-            <div className="absolute z-0" style={getCharacterContainerStyle()}>
+            <div 
+              className="absolute z-0" 
+              style={{
+                ...getCharacterContainerStyle(),
+                willChange: 'transform',
+                transform: 'translateZ(0)'
+              }}
+            >
               <img
                 src={ema.character.image_path}
                 alt={ema.character.name}
@@ -322,17 +347,22 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
                   height: 'auto',
                   maxHeight: '100%',
                   objectFit: 'contain',
-                  display: 'block'
+                  display: characterImageLoaded ? 'block' : 'none',
+                  willChange: 'transform',
+                  transform: 'translateZ(0)'
                 }}
+                loading="lazy"
                 onLoad={(e) => {
                   const img = e.target;
                   if (img.naturalWidth > 0 && img.naturalHeight > 0) {
                     const aspectRatio = img.naturalHeight / img.naturalWidth;
                     setCharacterImageAspectRatio(aspectRatio > 1);
+                    setCharacterImageLoaded(true);
                   }
                 }}
                 onError={(e) => {
                   e.target.style.display = 'none';
+                  setCharacterImageLoaded(true);
                 }}
               />
             </div>
