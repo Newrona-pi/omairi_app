@@ -87,13 +87,6 @@ export const AllEmas = ({
         <div className="flex flex-col items-center gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-2 justify-center">
             <button
-              onClick={handleViewMyEmaClick}
-              className="custom-outline-btn mx-auto mb-2"
-            >
-              <span className="btn-label-highlight">自分の絵馬を見る</span>
-              <span className="btn-arrow-highlight">&gt;</span>
-            </button>
-            <button
               onClick={handleRestartClick}
               className="custom-outline-btn mx-auto mb-2"
             >
