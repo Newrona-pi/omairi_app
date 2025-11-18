@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, getDocs, addDoc, serverTimestamp, updateDoc, doc, increment } from 'firebase/firestore';
+import { collection, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
+import { useMobile } from './hooks/useMobile';
+import { parseCSVLine } from './utils/characterUtils';
+import { WishForm } from './components/WishForm';
+import { CharacterSelection } from './components/CharacterSelection';
+import { EmaDisplay } from './components/EmaDisplay';
+import { AllEmas } from './components/AllEmas';
 
 // 再帰的にundefinedを除去する関数
 function removeUndefined(obj) {
@@ -32,6 +38,8 @@ const App = () => {
   const inputRef = useRef(null);
   const crowAudioRef = useRef(null); // カラス音声用
   const bgmAudioRef = useRef(null); // BGM用
+  const emaImageRef = useRef(null); // 絵馬画像用
+  const isMobile = useMobile();
 
   // いいね数と自分が押したかどうかの管理
   const [likedSet, setLikedSet] = useState(new Set()); // Set of liked ema ids
@@ -89,28 +97,6 @@ const App = () => {
         const response = await fetch(`${import.meta.env.BASE_URL}characters.csv`);
         const csvText = await response.text();
         const lines = csvText.split('\n');
-        const headers = lines[0].split(',');
-        
-        // CSVパース処理を改善（カンマ区切りを正しく処理）
-        const parseCSVLine = (line) => {
-          const result = [];
-          let current = '';
-          let inQuotes = false;
-          
-          for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            if (char === '"') {
-              inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-              result.push(current);
-              current = '';
-            } else {
-              current += char;
-            }
-          }
-          result.push(current);
-          return result;
-        };
         
         const characterData = lines.slice(1).filter(line => line.trim()).map(line => {
           const values = parseCSVLine(line);
@@ -288,67 +274,11 @@ const App = () => {
     setShowButtons(prev => !prev);
   };
 
-  // 検索フィルタリング
-  const filteredCharacters = characters.filter(character =>
-    (character.name && character.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (character.description && character.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  // 10文字ごとに改行を挿入する関数
-  const insertLineBreaks = (text) => {
-    if (!text) return '';
-    // 改行文字を削除してから処理
-    const cleanText = text.replace(/\n/g, '');
-    const lines = [];
-    for (let i = 0; i < cleanText.length; i += 10) {
-      lines.push(cleanText.slice(i, i + 10));
-    }
-    return lines.join('\n');
+  // キャラクター選択画面に戻る処理
+  const handleBackToCharacterSelection = () => {
+    setStep(5);
   };
 
-  // 文字数に応じてフォントサイズを返す関数
-  const getWishFontSize = (wish) => {
-    if (!wish) return '1rem';
-    if (wish.length <= 7) return '1.2rem';
-    if (wish.length <= 16) return '1.1rem';
-    if (wish.length <= 30) return '1rem';
-    if (wish.length <= 40) return '0.9rem';
-    return '0.8rem';
-  };
-
-  // 文字数に応じて名前のフォントサイズを返す関数
-  const getNameFontSize = (name) => {
-    if (!name) return '1rem';
-    if (name.length <= 4) return '1rem';
-    if (name.length <= 5) return '0.9rem';
-    if (name.length <= 6) return '0.8rem';
-    if (name.length <= 7) return '0.7rem';
-    if (name.length <= 8) return '0.6rem';
-    return '0.5rem';
-  };
-
-  // スマホ判定用state
-  const getIsMobile = () => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth < 640;
-  };
-  const [isMobile, setIsMobile] = useState(() => getIsMobile());
-  useEffect(() => {
-    const handleResize = () => setIsMobile(getIsMobile());
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // スマホ用：文字数に応じてフォントサイズを返す関数
-  const getWishFontSizeMobile = (wish) => {
-    if (!wish) return '1rem';
-    if (wish.length <= 8) return '1.1rem';
-    if (wish.length <= 14) return '1rem';
-    if (wish.length <= 20) return '0.9rem';
-    if (wish.length <= 30) return '0.8rem';
-    return '0.7rem';
-  };
 
   const renderContent = () => {
     switch (step) {
@@ -425,40 +355,15 @@ const App = () => {
               </div>
             )}
             {showWishForm && (
-              <div className="fixed inset-0 flex justify-center items-end pb-10 pointer-events-none z-10">
-                <motion.form
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.7, ease: 'easeOut' }}
-                  onSubmit={handleWishSubmit}
-                  className="p-4 rounded-lg shadow-lg w-full max-w-md bg-transparent pointer-events-auto"
-                >
-                  <textarea
-                    ref={inputRef}
-                    className="block w-full p-2 mb-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-white text-black"
-                    rows="4"
-                    placeholder="願い事を入力してください（30文字まで）..."
-                    value={wish}
-                    onChange={(e) => setWish(e.target.value)}
-                    maxLength={30}
-                    required
-                  ></textarea>
-                  <input
-                    type="text"
-                    className="block w-full p-2 mb-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    placeholder="名前を入力してください（10文字まで）..."
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={10}
-                  />
-                  <button
-                    type="submit"
-                    className="block w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition duration-300"
-                  >
-                    願い事を書く
-                  </button>
-                </motion.form>
-              </div>
+              <WishForm
+                wish={wish}
+                setWish={setWish}
+                name={name}
+                setName={setName}
+                handleWishSubmit={handleWishSubmit}
+                inputRef={inputRef}
+                isMobile={isMobile}
+              />
             )}
           </motion.div>
         );
@@ -479,658 +384,46 @@ const App = () => {
       case 5:
         // キャラクター選択画面
         return (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="fixed inset-0 w-screen h-screen overflow-hidden"
-          >
-            <video
-              src="assets/20251105_1612_01k99dqb5jfeyss6nv2m5s4kbj.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-0"
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{ filter: 'blur(8px)' }}
-            />
-            <div className="absolute inset-0 p-4 sm:p-6 md:p-8 overflow-y-auto">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
-                推しを選んでください
-              </h1>
-              {/* 検索ボックス */}
-              <div className="max-w-md mx-auto mb-4 sm:mb-6 md:mb-8">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="推しの名前で検索..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 pl-12 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
-                  />
-                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    🔍
-                  </div>
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm('')}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-                {searchTerm && (
-                  <p className="text-white text-sm mt-2 text-center">
-                    {filteredCharacters.length}件の推し候補が見つかりました
-                  </p>
-                )}
-              </div>
-              {loading ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="text-white text-xl">読み込み中...</div>
-                </div>
-              ) : (
-                <>
-                  {filteredCharacters.length === 0 ? (
-                    <div className="text-center text-white">
-                      <div className="text-2xl mb-4">😔</div>
-                      <p className="text-lg mb-2">該当する推し候補が見つかりませんでした</p>
-                      <p className="text-sm opacity-80">検索キーワードを変更してお試しください</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto">
-                      {filteredCharacters.map((character) => (
-                        <div
-                          key={character.id}
-                          className="bg-white rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer transform hover:scale-105 transition-transform duration-300 flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
-                          onClick={() => handleCharacterSelect(character)}
-                        >
-                          <div className="w-full h-4/5 flex items-center justify-center mb-3">
-                            <img
-                              src={character.image_path}
-                              alt={character.name}
-                              className="h-full w-full object-contain"
-                              onError={(e) => {
-                                console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
-                                e.target.style.display = 'none'; // 画像を非表示
-                              }}
-                              onLoad={() => {
-                                if (character.id === 31) {
-                                  console.log(`31番画像読み込み成功: ${character.image_path}`);
-                                }
-                              }}
-                            />
-                          </div>
-                          <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
-                            {character.name}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </motion.div>
+          <CharacterSelection
+            characters={characters}
+            loading={loading}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            handleCharacterSelect={handleCharacterSelect}
+          />
         );
       case 6:
         // 自分の絵馬画面
-        const wishContainerStyle = isMobile
-          ? {
-              top: '60%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '70vw',
-              height: '28vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }
-          : {
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '41.67vw',
-              height: '30vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            };
-
-        const wishTextStyle = isMobile
-          ? {
-              fontSize: 'clamp(1rem, 8vw, 2rem)',
-              textAlign: 'center',
-              whiteSpace: 'pre-wrap',
-              fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-              margin: 0,
-              padding: 0,
-              width: '100%'
-            }
-          : {
-              fontSize: '2.6vw',
-              textAlign: 'center',
-              whiteSpace: 'pre-wrap',
-              fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-              margin: 0,
-              padding: 0,
-              width: '100%'
-            };
-
-        const nameContainerStyle = isMobile
-          ? {
-              bottom: '22vh',
-              right: '65%',
-              transform: 'translate(50%, 0)',
-              width: '55vw',
-              height: '6vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              flexShrink: 0
-            }
-          : {
-              bottom: '14.81vh',
-              right: '52vw',
-              width: '23vw',
-              height: '5vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              flexShrink: 0
-            };
-
-        const nameTextStyle = isMobile
-          ? {
-              fontSize: 'clamp(1.1rem, 6vw, 3rem)',
-              fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-              margin: 0,
-              padding: 0,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: displayName.length > 10 ? 'ellipsis' : 'clip',
-              width: '100%',
-              textAlign: 'left'
-            }
-          : {
-              fontSize: '2.08vw',
-              fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-              textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-              margin: 0,
-              padding: 0,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: displayName.length > 10 ? 'ellipsis' : 'clip',
-              width: '100%',
-              textAlign: 'left'
-            };
-
-        const characterContainerStyle = isMobile
-          ? {
-              bottom: '24vh',
-              right: '4vw',
-              width: '32vw',
-              height: '35vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'center',
-              flexShrink: 0
-            }
-          : {
-              bottom: '1vw',
-              right: '23vw',
-              width: '25vw',
-              height: '60vh',
-              overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'flex-end',
-              justifyContent: 'center',
-              flexShrink: 0
-            };
-
-        const buttonContainerStyle = isMobile
-          ? {
-              bottom: '4%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: '90%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.75rem',
-              alignItems: 'stretch'
-            }
-          : {
-              top: '5%',
-              right: '5%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1rem',
-              alignItems: 'flex-end'
-            };
-
-        const buttonClassName = `custom-outline-btn${isMobile ? ' w-full text-base' : ''}`;
-
         return (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className={`fixed inset-0 w-screen h-screen ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}
-            onClick={handleMyEmaBackgroundClick}
-          >
-            <img 
-              src={isMobile ? "assets/ema-portrait.png" : "assets/ema1105-2.png"} 
-              alt="Ema" 
-              className="fs-img" 
-            />
-
-            {/* 願い事用の透明コンテナ */}
-            <div
-              className="absolute z-10"
-              style={wishContainerStyle}
-            >
-              <p
-                className="text-black font-handwriting"
-                style={wishTextStyle}
-              >
-                {insertLineBreaks(displayWish)}
-              </p>
-            </div>
-
-            {/* 名前用の透明コンテナ */}
-            <div
-              className="absolute z-10"
-              style={nameContainerStyle}
-            >
-              <p
-                className="text-black font-handwriting"
-                style={nameTextStyle}
-              >
-                {displayName}
-              </p>
-            </div>
-
-            {/* キャラクター画像用の透明コンテナ */}
-            {selectedCharacter && (
-              <div
-                className="absolute z-0"
-                style={characterContainerStyle}
-              >
-                <img
-                  src={selectedCharacter.image_path}
-                  alt={selectedCharacter.name}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    maxHeight: '100%',
-                    objectFit: 'contain',
-                    display: 'block'
-                  }}
-                />
-              </div>
-            )}
-            <AnimatePresence>
-              {showButtons && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="absolute z-10 button-container"
-                  style={buttonContainerStyle}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={handleEmaClick}
-                    className={buttonClassName}
-                  >
-                    <span className="btn-label-highlight">みんなの絵馬を見る</span>
-                    <span className="btn-arrow-highlight">&gt;</span>
-                  </button>
-                  <a
-                    href="https://newrona.jp/melofinity"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={buttonClassName}
-                    style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
-                  >
-                    <span className="btn-label-highlight">絵馬の購入はこちらから</span>
-                    <span className="btn-arrow-highlight">&gt;</span>
-                  </a>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <EmaDisplay
+            displayWish={displayWish}
+            displayName={displayName}
+            selectedCharacter={selectedCharacter}
+            showButtons={showButtons}
+            handleMyEmaBackgroundClick={handleMyEmaBackgroundClick}
+            handleEmaClick={handleEmaClick}
+            handleBackToCharacterSelection={handleBackToCharacterSelection}
+            isMobile={isMobile}
+            emaImageRef={emaImageRef}
+          />
         );
       case 7:
         // みんなの絵馬画面
-        const allEmaList = [...emas].sort((a, b) => {
-          if (sortByLikes) {
-            return (b.likes || 0) - (a.likes || 0); // Firestoreのlikesを使用
-          } else {
-            return (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0); // 新着順
-          }
-        });
-        // いいねボタンのハンドラ
-        const handleLike = async (id) => {
-          if (likedSet.has(id)) return; // 1人1回
-          try {
-            const emaRef = doc(db, 'emas', id);
-            console.log('like update: id', id, 'emaRef.path', emaRef.path);
-            await updateDoc(emaRef, { likes: increment(1) });
-            setLikedSet(new Set([...likedSet, id]));
-            saveLikesToStorage(new Set([...likedSet, id]));
-            await fetchEmas(); // いいね更新後に再取得
-            console.log('after update, emas:', emas);
-          } catch (e) {
-            console.error('いいねの更新に失敗しました', e);
-          }
-        };
         return (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="fixed inset-0 w-screen h-screen overflow-hidden"
-          >
-            <video
-              src="assets/20251105_1612_01k99dqb5jfeyss6nv2m5s4kbj.mp4"
-              className="absolute inset-0 w-full h-full object-cover z-0 blur-sm"
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={{ filter: 'blur(8px)' }}
-            />
-            <div className="absolute inset-0 overflow-y-auto p-4 sm:p-6 md:p-8">
-              <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
-                ～ みんなの絵馬 ～
-              </h1>
-              {/* 並び替え（トグルスイッチ） */}
-              <div className="flex justify-center items-center mb-4 gap-3">
-                <span className="text-white text-sm">新着順</span>
-                <button
-                  onClick={() => setSortByLikes(!sortByLikes)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
-                    sortByLikes ? 'bg-red-600' : 'bg-gray-300'
-                  }`}
-                  role="switch"
-                  aria-checked={sortByLikes}
-                  aria-label="並び替え切り替え"
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      sortByLikes ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-                <span className="text-white text-sm">いいね順</span>
-              </div>
-              {/* 操作ボタンをまとめて上部に表示 */}
-              <div className="flex flex-col items-center gap-4 mb-6">
-                <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                  <button
-                    onClick={handleViewMyEmaClick}
-                    className="custom-outline-btn mx-auto mb-2"
-                  >
-                    <span className="btn-label-highlight">自分の絵馬を見る</span>
-                    <span className="btn-arrow-highlight">&gt;</span>
-                  </button>
-                  <button
-                    onClick={handleRestartClick}
-                    className="custom-outline-btn mx-auto mb-2"
-                  >
-                    <span className="btn-label-highlight">もう一度お参りをする</span>
-                    <span className="btn-arrow-highlight">&gt;</span>
-                  </button>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
-                {allEmaList.length === 0 ? (
-                  <div className="col-span-4 text-center text-white text-xl py-8">
-                    まだ絵馬が投稿されていません。<br />
-                    最初の絵馬を書いてみませんか？
-                  </div>
-                ) : (
-                  allEmaList.map((ema) => (
-                    <div 
-                      key={ema.id} 
-                      className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent cursor-pointer"
-                      onClick={() => setExpandedEma(ema)}
-                    >
-                      <img 
-                        src="assets/ema-transparent.png" 
-                        alt="絵馬" 
-                        className="w-full h-48 object-cover rounded-md bg-transparent"
-                        style={{ backgroundColor: 'transparent' }}
-                      />
-                      <div className="absolute inset-0 flex flex-col justify-center items-center p-4 pointer-events-none">
-                        <p className="text-lg text-black mb-3 font-medium text-center leading-tight"
-                           style={{
-                             fontFamily: '"Hina Mincho", serif',
-                             textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-                             maxWidth: '75%',
-                             position: 'absolute',
-                             top: isMobile ? '50%' : '60%',
-                             left: '50%',
-                             transform: 'translate(-50%, -50%)',
-                             fontSize: isMobile ? getWishFontSizeMobile(ema.wish) : getWishFontSize(ema.wish),
-                             wordBreak: 'keep-all',
-                             whiteSpace: 'pre',
-                             overflowWrap: 'normal'
-                           }}>
-                          {insertLineBreaks(ema.wish)}
-                        </p>
-                        <p className="text-sm text-black font-medium"
-                           style={{
-                             fontFamily: '"Hina Mincho", serif',
-                             textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-                             position: 'absolute',
-                             bottom: isMobile ? '18%' : '10%',
-                             right: isMobile ? '80%' : '65%',
-                             transform: isMobile ? 'translate(50%, 0)' : 'translateX(50%)',
-                             fontSize: getNameFontSize(ema.name),
-                             maxWidth: '60%',
-                             overflow: 'hidden',
-                             textOverflow: 'ellipsis',
-                             whiteSpace: 'nowrap'
-                           }}>
-                          {ema.name}
-                        </p>
-                        {/* キャラクター画像がある場合のみ右下に表示 */}
-                        {ema.character && (
-                          <img
-                            src={ema.character.image_path}
-                            alt={ema.character.name}
-                            className="absolute w-20 h-28 object-contain"
-                            style={isMobile ? { bottom: '15%', right: '12%' } : { bottom: '4%', right: '18%' }}
-                            onError={e => { e.target.style.display = 'none'; }}
-                          />
-                        )}
-                        {/* いいねボタン PC表示のみ */}
-                        {!isMobile && (
-                          <button
-                            type="button"
-                            className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-                            style={{ bottom: '8%', left: '8%' }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLike(ema.id);
-                            }}
-                            disabled={likedSet.has(ema.id)}
-                            aria-label="いいね"
-                          >
-                            <span role="img" aria-label="like">❤️</span>
-                            {ema.likes || 0}
-                          </button>
-                        )}
-                      </div>
-                      {/* いいねボタン スマホ表示のみ（絵馬の下に独立して配置） */}
-                      {isMobile && (
-                        <div className="flex justify-center mt-2" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            type="button"
-                            className="flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleLike(ema.id);
-                            }}
-                            disabled={likedSet.has(ema.id)}
-                            aria-label="いいね"
-                          >
-                            <span role="img" aria-label="like">❤️</span>
-                            {ema.likes || 0}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-            {/* 拡大表示モーダル */}
-            <AnimatePresence>
-              {expandedEma && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                  onClick={() => setExpandedEma(null)}
-                >
-                  <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="relative w-[90vw] max-w-[800px] h-[80vh] max-h-[900px]"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img 
-                      src="assets/ema-transparent.png" 
-                      alt="絵馬" 
-                      className="w-full h-full object-contain"
-                    />
-                    {/* 願い事 */}
-                    <div
-                      className="absolute z-10"
-                      style={{
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '60%',
-                        maxHeight: '40%',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <p
-                        className="text-black font-handwriting text-center"
-                        style={{
-                          fontSize: 'clamp(1.2rem, 2.8vw, 3rem)',
-                          whiteSpace: 'pre',
-                          wordBreak: 'keep-all',
-                          fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-                          textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-                          margin: 0,
-                          padding: 0,
-                          width: '100%',
-                        }}
-                      >
-                        {insertLineBreaks(expandedEma.wish)}
-                      </p>
-                    </div>
-                    {/* 名前 */}
-                    <div
-                      className="absolute z-10"
-                      style={{
-                        bottom: '35%',
-                        right: '47%',
-                        width: '30%',
-                        maxHeight: '8%',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-start',
-                      }}
-                    >
-                      <p
-                        className="text-black font-handwriting"
-                        style={{
-                          fontSize: 'clamp(1rem, 2vw, 1.5rem)',
-                          fontFamily: '"Klee One", "Hina Mincho", "Noto Sans JP", cursive',
-                          textShadow: '2px 2px 4px rgba(255,255,255,0.9)',
-                          margin: 0,
-                          padding: 0,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          width: '100%',
-                          textAlign: 'left',
-                        }}
-                      >
-                        {expandedEma.name}
-                      </p>
-                    </div>
-                    {/* キャラクター画像 */}
-                    {expandedEma.character && (
-                      <div 
-                        className="absolute z-0"
-                        style={{ 
-                          bottom: '35%',
-                          right: '8%',
-                          width: '30%',
-                          height: '50%',
-                          overflow: 'hidden',
-                          display: 'flex',
-                          alignItems: 'flex-end',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <img 
-                          src={expandedEma.character.image_path} 
-                          alt={expandedEma.character.name} 
-                          style={{ 
-                            width: '70%',
-                            height: 'auto',
-                            maxHeight: '100%',
-                            objectFit: 'contain',
-                            display: 'block'
-                          }}
-                          onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
-                        />
-                      </div>
-                    )}
-                    {/* 閉じるボタン */}
-                    <button
-                      onClick={() => setExpandedEma(null)}
-                      className="absolute top-4 right-4 z-20 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold text-gray-800 shadow-lg transition-all"
-                      aria-label="閉じる"
-                    >
-                      ×
-                    </button>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+          <AllEmas
+            emas={emas}
+            sortByLikes={sortByLikes}
+            setSortByLikes={setSortByLikes}
+            handleViewMyEmaClick={handleViewMyEmaClick}
+            handleRestartClick={handleRestartClick}
+            likedSet={likedSet}
+            setLikedSet={setLikedSet}
+            saveLikesToStorage={saveLikesToStorage}
+            fetchEmas={fetchEmas}
+            expandedEma={expandedEma}
+            setExpandedEma={setExpandedEma}
+            isMobile={isMobile}
+          />
         );
       default:
         return null;
