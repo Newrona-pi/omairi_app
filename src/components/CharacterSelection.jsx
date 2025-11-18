@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { filterCharacters } from '../utils/characterUtils';
+
+const INITIAL_DISPLAY_COUNT = 10;
+const LOAD_MORE_COUNT = 10;
 
 export const CharacterSelection = ({ 
   characters, 
@@ -10,6 +13,15 @@ export const CharacterSelection = ({
   handleCharacterSelect 
 }) => {
   const filteredCharacters = filterCharacters(characters, searchTerm);
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+
+  // 検索語が変更されたら表示数をリセット
+  useEffect(() => {
+    setDisplayCount(INITIAL_DISPLAY_COUNT);
+  }, [searchTerm]);
+
+  const displayedCharacters = filteredCharacters.slice(0, displayCount);
+  const hasMore = filteredCharacters.length > displayCount;
 
   return (
     <motion.div
@@ -73,35 +85,48 @@ export const CharacterSelection = ({
                 <p className="text-sm opacity-80">検索キーワードを変更してお試しください</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto">
-                {filteredCharacters.map((character) => (
-                  <div
-                    key={character.id}
-                    className="bg-white/80 rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer transform hover:scale-105 transition-transform duration-300 flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
-                    onClick={() => handleCharacterSelect(character)}
-                  >
-                    <div className="w-full h-4/5 flex items-center justify-center mb-3">
-                      <img
-                        src={character.image_path}
-                        alt={character.name}
-                        className="h-full w-full object-contain"
-                        onError={(e) => {
-                          console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
-                          e.target.style.display = 'none';
-                        }}
-                        onLoad={() => {
-                          if (character.id === 31) {
-                            console.log(`31番画像読み込み成功: ${character.image_path}`);
-                          }
-                        }}
-                      />
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto">
+                  {displayedCharacters.map((character) => (
+                    <div
+                      key={character.id}
+                      className="bg-white/80 rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer transform hover:scale-105 transition-transform duration-300 flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
+                      onClick={() => handleCharacterSelect(character)}
+                    >
+                      <div className="w-full h-4/5 flex items-center justify-center mb-3">
+                        <img
+                          src={character.image_path}
+                          alt={character.name}
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                          onError={(e) => {
+                            console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
+                            e.target.style.display = 'none';
+                          }}
+                          onLoad={() => {
+                            if (character.id === 31) {
+                              console.log(`31番画像読み込み成功: ${character.image_path}`);
+                            }
+                          }}
+                        />
+                      </div>
+                      <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
+                        {character.name}
+                      </p>
                     </div>
-                    <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
-                      {character.name}
-                    </p>
+                  ))}
+                </div>
+                {hasMore && (
+                  <div className="flex justify-center mt-6 mb-4">
+                    <button
+                      onClick={() => setDisplayCount(prev => prev + LOAD_MORE_COUNT)}
+                      className="px-6 py-3 bg-white/90 hover:bg-white text-gray-800 font-bold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                    >
+                      さらに表示する ({filteredCharacters.length - displayCount}件)
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </>
         )}

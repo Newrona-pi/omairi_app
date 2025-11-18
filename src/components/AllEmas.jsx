@@ -5,6 +5,9 @@ import { db } from '../firebase';
 import { insertLineBreaks } from '../utils/emaUtils';
 import { useEmaImageSize } from '../hooks/useEmaImageSize';
 
+const INITIAL_DISPLAY_COUNT = 10;
+const LOAD_MORE_COUNT = 10;
+
 export const AllEmas = ({
   emas,
   sortByLikes,
@@ -26,6 +29,16 @@ export const AllEmas = ({
       return (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0);
     }
   });
+
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+
+  // 並び替えや絵馬データが変更されたら表示数をリセット
+  useEffect(() => {
+    setDisplayCount(INITIAL_DISPLAY_COUNT);
+  }, [sortByLikes, emas.length]);
+
+  const displayedEmas = allEmaList.slice(0, displayCount);
+  const hasMore = allEmaList.length > displayCount;
 
   // いいねボタンのハンドラ
   const handleLike = async (id) => {
@@ -102,18 +115,30 @@ export const AllEmas = ({
               最初の絵馬を書いてみませんか？
             </div>
           ) : (
-            allEmaList.map((ema) => (
-              <EmaListCard
-                key={ema.id}
-                ema={ema}
-                isMobile={isMobile}
-                setExpandedEma={setExpandedEma}
-                handleLike={handleLike}
-                likedSet={likedSet}
-              />
-            ))
+            <>
+              {displayedEmas.map((ema) => (
+                <EmaListCard
+                  key={ema.id}
+                  ema={ema}
+                  isMobile={isMobile}
+                  setExpandedEma={setExpandedEma}
+                  handleLike={handleLike}
+                  likedSet={likedSet}
+                />
+              ))}
+            </>
           )}
         </div>
+        {hasMore && (
+          <div className="flex justify-center mt-6 mb-4">
+            <button
+              onClick={() => setDisplayCount(prev => prev + LOAD_MORE_COUNT)}
+              className="px-6 py-3 bg-white/90 hover:bg-white text-gray-800 font-bold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+            >
+              さらに表示する ({allEmaList.length - displayCount}件)
+            </button>
+          </div>
+        )}
       </div>
       {/* 拡大表示モーダル */}
       <ExpandedEmaModal
@@ -132,10 +157,47 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
   const [characterImageLoaded, setCharacterImageLoaded] = useState(false);
   const [emaImageLoaded, setEmaImageLoaded] = useState(false);
 
+  const characterImageRef = useRef(null);
+
   useEffect(() => {
     setCharacterImageAspectRatio(null);
     setCharacterImageLoaded(false);
+    
+    // キャラクター画像が既に読み込まれている場合（キャッシュなど）をチェック
+    // 少し遅延させて、refが設定された後にチェック
+    const checkImageLoaded = setTimeout(() => {
+      if (characterImageRef.current?.complete) {
+        const img = characterImageRef.current;
+        if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+          const aspectRatio = img.naturalHeight / img.naturalWidth;
+          setCharacterImageAspectRatio(aspectRatio > 1);
+          setCharacterImageLoaded(true);
+        }
+      }
+    }, 100);
+    
+    return () => clearTimeout(checkImageLoaded);
   }, [ema.character?.id]);
+
+  // 画像読み込みタイムアウト: 3秒後に表示を試みる
+  useEffect(() => {
+    if (!characterImageLoaded && ema.character) {
+      const timer = setTimeout(() => {
+        if (!characterImageLoaded && characterImageRef.current) {
+          const img = characterImageRef.current;
+          if (img.complete && img.naturalWidth > 0) {
+            const aspectRatio = img.naturalHeight / img.naturalWidth;
+            setCharacterImageAspectRatio(aspectRatio > 1);
+            setCharacterImageLoaded(true);
+          } else {
+            // タイムアウト後も読み込まれていない場合は表示を試みる
+            setCharacterImageLoaded(true);
+          }
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [characterImageLoaded, ema.character?.id]);
 
   useEffect(() => {
     if (emaImageRef.current?.complete) {
@@ -340,6 +402,7 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
               }}
             >
               <img
+                ref={characterImageRef}
                 src={ema.character.image_path}
                 alt={ema.character.name}
                 style={{
@@ -357,6 +420,9 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
                   if (img.naturalWidth > 0 && img.naturalHeight > 0) {
                     const aspectRatio = img.naturalHeight / img.naturalWidth;
                     setCharacterImageAspectRatio(aspectRatio > 1);
+                    setCharacterImageLoaded(true);
+                  } else {
+                    // 画像サイズが取得できない場合でも表示
                     setCharacterImageLoaded(true);
                   }
                 }}
@@ -418,11 +484,21 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
   const emaImageSize = useEmaImageSize(emaImageRef, expandedEma ? 7 : 0);
   const [forceUpdate, setForceUpdate] = useState(0);
   const [characterImageAspectRatio, setCharacterImageAspectRatio] = useState(null); // null: 未判定, true: 縦長, false: 横長
+  const [characterImageLoaded, setCharacterImageLoaded] = useState(false);
+  const [emaImageLoaded, setEmaImageLoaded] = useState(false);
 
   // 拡大表示する絵馬が変更された時にアスペクト比をリセット
   useEffect(() => {
     setCharacterImageAspectRatio(null);
-  }, [expandedEma?.character?.id]);
+    setCharacterImageLoaded(false);
+    setEmaImageLoaded(false);
+  }, [expandedEma?.character?.id, expandedEma?.id]);
+
+  useEffect(() => {
+    if (emaImageRef.current?.complete) {
+      setEmaImageLoaded(true);
+    }
+  }, [expandedEma]);
 
   // モーダルが開いた時やリサイズ時に画像サイズを再計算
   useEffect(() => {
@@ -489,12 +565,18 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
               src="assets/ema-transparent.png" 
               alt="絵馬" 
               className="max-w-full max-h-full w-auto h-auto"
-              style={{ objectFit: 'contain' }}
+              style={{ 
+                objectFit: 'contain',
+                willChange: 'transform',
+                transform: 'translateZ(0)'
+              }}
+              loading="eager"
+              onLoad={() => setEmaImageLoaded(true)}
             />
           </div>
 
           {/* 絵馬画像の上に要素を配置するコンテナ（絵馬画像と同じサイズ・位置） */}
-          {emaImageSize.width > 0 && emaImageSize.height > 0 && (
+          {emaImageSize.width > 0 && emaImageSize.height > 0 && emaImageLoaded && (
             <div 
               className="absolute z-10 pointer-events-none"
               style={{
@@ -512,7 +594,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                     ? {
                         top: '61%',
                         left: '50%',
-                        transform: 'translate(-50%, -50%)',
+                        transform: 'translate(-50%, -50%) translateZ(0)',
                         width: '70%',
                         height: '28%',
                         overflow: 'hidden',
@@ -524,7 +606,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                     : {
                         top: '48%',
                         left: '37%',
-                        transform: 'translate(-50%, -50%)',
+                        transform: 'translate(-50%, -50%) translateZ(0)',
                         width: '41.67%',
                         height: '30%',
                         overflow: 'hidden',
@@ -533,7 +615,8 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                         justifyContent: 'center',
                         flexShrink: 0
                       }),
-                  zIndex: 20
+                  zIndex: 20,
+                  willChange: 'transform'
                 }}
               >
                 <p
@@ -580,7 +663,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                         justifyContent: 'flex-start',
                         flexShrink: 0
                       }),
-                  zIndex: 20
+                  zIndex: 20,
+                  willChange: 'transform',
+                  transform: 'translateZ(0)'
                 }}
               >
                 <p
@@ -696,7 +781,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       }
                     }
                   })(),
-                  zIndex: 10
+                  zIndex: 10,
+                  willChange: 'transform',
+                  transform: 'translateZ(0)'
                 }}
                 >
                   <img
@@ -707,17 +794,24 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       height: 'auto',
                       maxHeight: '100%',
                       objectFit: 'contain',
-                      display: 'block'
+                      display: characterImageLoaded ? 'block' : 'none',
+                      willChange: 'transform',
+                      transform: 'translateZ(0)'
                     }}
+                    loading="lazy"
                     onLoad={(e) => {
                       // 画像のアスペクト比を判定
                       const img = e.target;
                       if (img.naturalWidth > 0 && img.naturalHeight > 0) {
                         const aspectRatio = img.naturalHeight / img.naturalWidth;
                         setCharacterImageAspectRatio(aspectRatio > 1); // true: 縦長, false: 横長
+                        setCharacterImageLoaded(true);
                       }
                     }}
-                    onError={e => { e.target.src = 'new-png-assets2/01_そらねなご.png'; }}
+                    onError={(e) => {
+                      e.target.src = 'new-png-assets2/01_そらねなご.png';
+                      setCharacterImageLoaded(true);
+                    }}
                   />
                 </div>
               )}
