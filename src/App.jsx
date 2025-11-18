@@ -8,6 +8,7 @@ import { WishForm } from './components/WishForm';
 import { CharacterSelection } from './components/CharacterSelection';
 import { EmaDisplay } from './components/EmaDisplay';
 import { AllEmas } from './components/AllEmas';
+import { EmaAdmin } from './components/EmaAdmin';
 
 // 再帰的にundefinedを除去する関数
 function removeUndefined(obj) {
@@ -24,7 +25,7 @@ function removeUndefined(obj) {
 }
 
 const App = () => {
-  const [step, setStep] = useState(1); // 1: 初期画面, 2: 鳥居, 3: 境内, 4: 絵馬掛け, 5: キャラ選択, 6: 自分の絵馬, 7: みんなの絵馬
+  const [step, setStep] = useState(1); // 1: 初期画面, 2: 鳥居, 3: 境内, 4: 絵馬掛け, 5: キャラ選択, 6: 自分の絵馬, 7: みんなの絵馬, 8: 管理画面
   const [wish, setWish] = useState('');
   const [name, setName] = useState('');
   const [displayWish, setDisplayWish] = useState('');
@@ -144,6 +145,26 @@ const App = () => {
     }
   }, [step]);
 
+  // URLパラメータで管理画面にアクセス
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      setStep(8);
+    }
+  }, []);
+
+  // キーボードショートカット（Ctrl+Shift+A）で管理画面にアクセス
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setStep(8);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     if (step === 3 && inputRef.current) {
       inputRef.current.focus();
@@ -221,16 +242,23 @@ const App = () => {
     setStep(4); // 絵馬掛け画面に移動
   };
 
-  const handleCharacterSelect = async (character) => {
+  const handleCharacterSelect = (character) => {
     setSelectedCharacter(character);
     setStep(6); // 自分の絵馬画面に移動
-    // Firestoreに絵馬を保存
+  };
+
+  const handleEmakakeClick = () => {
+    setStep(5);
+  };
+
+  const handleEmaClick = async () => {
+    // みんなの絵馬画面に遷移する前にFirestoreに絵馬を保存
     try {
       // characterがundefined/nullの場合は空オブジェクトに
-      const cleanCharacter = character ? removeUndefined(character) : {};
+      const cleanCharacter = selectedCharacter ? removeUndefined(selectedCharacter) : {};
       // descriptionフィールドを明示的に除外
       const { description, ...characterWithoutDescription } = cleanCharacter;
-      console.log('character before save:', character);
+      console.log('character before save:', selectedCharacter);
       console.log('cleanCharacter:', cleanCharacter);
       await addDoc(collection(db, 'emas'), {
         wish: displayWish,
@@ -242,13 +270,6 @@ const App = () => {
     } catch (e) {
       console.error('絵馬の保存に失敗しました', e);
     }
-  };
-
-  const handleEmakakeClick = () => {
-    setStep(5);
-  };
-
-  const handleEmaClick = () => {
     setStep(7);
   };
 
@@ -454,6 +475,11 @@ const App = () => {
             setExpandedEma={setExpandedEma}
             isMobile={isMobile}
           />
+        );
+      case 8:
+        // 管理画面
+        return (
+          <EmaAdmin onBack={() => setStep(1)} />
         );
       default:
         return null;

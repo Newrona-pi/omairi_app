@@ -60,7 +60,7 @@ export const AllEmas = ({
         style={{ filter: 'blur(8px)' }}
       />
       <div className="absolute inset-0 overflow-y-auto p-4 sm:p-6 md:p-8">
-        <h1 className="text-3xl font-bold text-center text-white mb-8 drop-shadow-lg">
+        <h1 className="text-3xl font-bold text-center text-white/80 mb-8 drop-shadow-lg">
           ～ みんなの絵馬 ～
         </h1>
         {/* 並び替え（トグルスイッチ） */}
@@ -255,7 +255,7 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
         <div className="absolute inset-0 p-4 pointer-events-none">
           {/* 願い事テキスト領域 */}
           <div
-            className="absolute"
+            className="absolute z-10"
             style={{
               top: isMobile ? '47%' : '57%',
               left: '50%',
@@ -287,10 +287,10 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
           </div>
           {/* 名前テキスト領域 */}
           <div
-            className="absolute"
+            className="absolute z-10"
             style={{
               bottom: isMobile ? '23%' : '12%',
-              right: isMobile ? '30%' : '41%',
+              right: isMobile ? '30%' : '38%',
               width: isMobile ? '55%' : '45%',
               height: '6%',
               overflow: 'hidden',
@@ -320,7 +320,7 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
           </div>
           {/* キャラクター画像領域 */}
           {ema.character && (
-            <div className="absolute" style={getCharacterContainerStyle()}>
+            <div className="absolute z-0" style={getCharacterContainerStyle()}>
               <img
                 src={ema.character.image_path}
                 alt={ema.character.name}
@@ -348,7 +348,7 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
             <button
               type="button"
               className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-              style={{ bottom: '8%', left: '6%' }}
+              style={{ bottom: '8%', left: '0.1%' }}
               onClick={(e) => {
                 e.stopPropagation();
                 handleLike(ema.id);

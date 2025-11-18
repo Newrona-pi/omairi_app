@@ -68,11 +68,17 @@ export const EmaDisplay = ({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6, ease: 'easeInOut' }}
       className={`fixed inset-0 w-screen h-screen ${isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}
-      style={{
-        background: 'linear-gradient(to bottom, #f9fafb, #e5e7eb, #9ca3af)'
-      }}
       onClick={handleMyEmaBackgroundClick}
     >
+      <video
+        src="assets/20251105_1612_01k99dqb5jfeyss6nv2m5s4kbj.mp4"
+        className="absolute inset-0 w-full h-full object-cover z-0 blur-sm"
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{ filter: 'blur(8px)' }}
+      />
       {/* 絵馬画像を中央に配置するコンテナ */}
       <div className="absolute inset-0 flex items-center justify-center z-0">
         <img 
@@ -329,7 +335,7 @@ export const EmaDisplay = ({
               onClick={handleBackToCharacterSelection}
               className={buttonClassName}
             >
-              <span className="btn-label-highlight">キャラクター選択に戻る</span>
+              <span className="btn-label-highlight">推しの選択に戻る</span>
               <span className="btn-arrow-highlight">&lt;</span>
             </button>
             <button
