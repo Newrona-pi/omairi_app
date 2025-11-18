@@ -8,7 +8,7 @@ import { WishForm } from './components/WishForm';
 import { CharacterSelection } from './components/CharacterSelection';
 import { EmaDisplay } from './components/EmaDisplay';
 import { AllEmas } from './components/AllEmas';
-import { EmaAdmin } from './components/EmaAdmin';
+// EmaAdminは動的インポート（開発中）
 
 // 再帰的にundefinedを除去する関数
 function removeUndefined(obj) {
@@ -23,6 +23,43 @@ function removeUndefined(obj) {
   }
   return obj;
 }
+
+// EmaAdminを動的インポートするラッパーコンポーネント
+const EmaAdminWrapper = ({ onBack }) => {
+  const [EmaAdminComponent, setEmaAdminComponent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('./components/EmaAdmin')
+      .then(module => {
+        setEmaAdminComponent(() => module.EmaAdmin);
+        setLoading(false);
+      })
+      .catch(() => {
+        console.warn('EmaAdmin component not available');
+        setEmaAdminComponent(null);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900 text-white">
+        <div>読み込み中...</div>
+      </div>
+    );
+  }
+
+  if (!EmaAdminComponent) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900 text-white">
+        <div>管理画面は現在利用できません</div>
+      </div>
+    );
+  }
+
+  return <EmaAdminComponent onBack={onBack} />;
+};
 
 const App = () => {
   const [step, setStep] = useState(1); // 1: 初期画面, 2: 鳥居, 3: 境内, 4: 絵馬掛け, 5: キャラ選択, 6: 自分の絵馬, 7: みんなの絵馬, 8: 管理画面
@@ -477,9 +514,9 @@ const App = () => {
           />
         );
       case 8:
-        // 管理画面
+        // 管理画面（動的インポート）
         return (
-          <EmaAdmin onBack={() => setStep(1)} />
+          <EmaAdminWrapper onBack={() => setStep(1)} />
         );
       default:
         return null;
