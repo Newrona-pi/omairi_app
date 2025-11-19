@@ -142,7 +142,8 @@ const App = () => {
             id: parseInt(values[0]),
             name: values[1],
             image_path: values[2],
-            description: values[3]
+            description: values[3],
+            purchase_url: values[4] || 'https://newrona.jp/melofinity' // URLが指定されていない場合はデフォルトURL
           };
           // デバッグ: 31番のキャラクターをログ出力
           if (character.id === 31) {

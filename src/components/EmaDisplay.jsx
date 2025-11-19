@@ -352,7 +352,7 @@ export const EmaDisplay = ({
               onClick={(e) => e.stopPropagation()}
             >
               <a
-                href="https://newrona.jp/melofinity"
+                href={selectedCharacter?.purchase_url || 'https://newrona.jp/melofinity'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="purchase-btn"
