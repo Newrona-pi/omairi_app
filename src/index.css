@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* うつくし明朝体フォントの定義 */
+@font-face {
+  font-family: 'UtsukushiMincho';
+  src: url('/fonts/UtsukushiFONT.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 html, body, #root {
   height: 100%;
   min-height: 100vh;
@@ -9,6 +18,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  font-family: 'UtsukushiMincho', 'Klee One', 'Hina Mincho', 'Noto Sans JP', serif;
 }
 
 .fs-img {
@@ -31,6 +41,7 @@ html, body, #root {
   padding: 1rem 2rem;
   font-size: 1.25rem;
   font-weight: bold;
+  font-family: 'UtsukushiMincho', 'Klee One', 'Hina Mincho', 'Noto Sans JP', serif;
   box-shadow: 0 8px 32px rgba(116, 63, 32, 0.1);
   border: 2px solid rgba(255,255,255,0.3);
   cursor: pointer;
@@ -43,6 +54,7 @@ html, body, #root {
   padding: 0.75rem 0.75rem 0.75rem 1.5rem;
   font-size: 1.25rem;
   font-weight: bold;
+  font-family: 'UtsukushiMincho', 'Klee One', 'Hina Mincho', 'Noto Sans JP', serif;
   color: #dc2626;
   border: 2px solid #dfdadb;
   background: transparent;
@@ -74,6 +86,13 @@ html, body, #root {
   font-size: 1.3em;
 }
 
+/* 横長画面でのボタンコンテナ内のボタン幅を統一 */
+@media (min-width: 641px) {
+  .button-container .custom-outline-btn {
+    width: 100%;
+  }
+}
+
 @media (max-width: 640px) {
   html, body, #root {
     overflow: auto;
@@ -98,6 +117,7 @@ html, body, #root {
   padding: 0.875rem 1.25rem;
   font-size: 1rem;
   font-weight: 600;
+  font-family: 'UtsukushiMincho', 'Klee One', 'Hina Mincho', 'Noto Sans JP', serif;
   color: white;
   background: linear-gradient(to right, #f75423, #ff6b3d, #dc2626);
   border: none;

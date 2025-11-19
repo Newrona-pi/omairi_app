@@ -389,6 +389,26 @@ const App = () => {
                 className="max-w-[100vw] max-h-[100vh] w-auto h-auto object-contain animate-pulse"
               />
             </div>
+            {/* 音声再生の喚起表示 */}
+            <div className="absolute top-4 right-4 pointer-events-none z-10">
+              <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm sm:text-base">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-5 w-5 sm:h-6 sm:w-6 animate-pulse" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" 
+                  />
+                </svg>
+                <span className="font-medium">音声が流れます</span>
+              </div>
+            </div>
           </div>
         );
       case 2:

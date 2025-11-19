@@ -41,7 +41,7 @@ export const CharacterSelection = ({
         style={{ filter: 'blur(8px)' }}
       />
       <div className="absolute inset-0 p-4 sm:p-6 md:p-8 overflow-y-auto">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center text-white/80 mb-4 sm:mb-6 md:mb-8 drop-shadow-lg">
           推しを選んでください
         </h1>
         {/* 検索ボックス */}
@@ -52,7 +52,7 @@ export const CharacterSelection = ({
               placeholder="推しの名前で検索..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
+              className="w-full px-4 py-3 pl-12 bg-white rounded-none shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-800"
             />
             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
               🔍
@@ -80,7 +80,7 @@ export const CharacterSelection = ({
           <>
             {filteredCharacters.length === 0 ? (
               <div className="text-center text-white">
-                <div className="text-2xl mb-4">😔</div>
+                <div className="text-2xl mb-4">🐎🐎🐎</div>
                 <p className="text-lg mb-2">該当する推し候補が見つかりませんでした</p>
                 <p className="text-sm opacity-80">検索キーワードを変更してお試しください</p>
               </div>

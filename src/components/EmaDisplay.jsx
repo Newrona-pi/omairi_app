@@ -39,7 +39,9 @@ export const EmaDisplay = ({
         display: 'flex',
         flexDirection: 'column',
         gap: '1rem',
-        alignItems: 'flex-end'
+        alignItems: 'stretch',
+        width: 'auto',
+        minWidth: '220px'
       };
 
   const purchaseButtonStyle = isMobile

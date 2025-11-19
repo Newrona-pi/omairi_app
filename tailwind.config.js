@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        handwriting: ["Hina Mincho", "serif"], // Google Fontsから取得した手書き風フォント
+        handwriting: ["Klee One", "Hina Mincho", "Noto Sans JP", "cursive"], // 絵馬のテキスト用フォント
       },
     },
   },
