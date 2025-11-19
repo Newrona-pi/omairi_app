@@ -30,16 +30,24 @@ const EmaAdminWrapper = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     import('./components/EmaAdmin')
       .then(module => {
+        if (!isMounted) return;
         setEmaAdminComponent(() => module.EmaAdmin);
         setLoading(false);
       })
       .catch(() => {
+        if (!isMounted) return;
         console.warn('EmaAdmin component not available');
         setEmaAdminComponent(null);
         setLoading(false);
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
@@ -145,10 +153,6 @@ const App = () => {
             description: values[3],
             purchase_url: values[4] || 'https://newrona.jp/melofinity' // URLが指定されていない場合はデフォルトURL
           };
-          // デバッグ: 31番のキャラクターをログ出力
-          if (character.id === 31) {
-            console.log('31番キャラクター:', character);
-          }
           return character;
         });
         
@@ -528,7 +532,7 @@ const App = () => {
             likedSet={likedSet}
             setLikedSet={setLikedSet}
             saveLikesToStorage={saveLikesToStorage}
-            fetchEmas={fetchEmas}
+            setEmas={setEmas}
             expandedEma={expandedEma}
             setExpandedEma={setExpandedEma}
             isMobile={isMobile}
