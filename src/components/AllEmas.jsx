@@ -17,7 +17,7 @@ export const AllEmas = ({
   likedSet,
   setLikedSet,
   saveLikesToStorage,
-  fetchEmas,
+  setEmas,
   expandedEma,
   setExpandedEma,
   isMobile
@@ -45,11 +45,14 @@ export const AllEmas = ({
     if (likedSet.has(id)) return;
     try {
       const emaRef = doc(db, 'emas', id);
-      console.log('like update: id', id, 'emaRef.path', emaRef.path);
       await updateDoc(emaRef, { likes: increment(1) });
       setLikedSet(new Set([...likedSet, id]));
       saveLikesToStorage(new Set([...likedSet, id]));
-      await fetchEmas();
+      setEmas(prevEmas =>
+        prevEmas.map(ema =>
+          ema.id === id ? { ...ema, likes: (ema.likes || 0) + 1 } : ema
+        )
+      );
     } catch (e) {
       console.error('いいねの更新に失敗しました', e);
     }

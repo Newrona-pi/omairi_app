@@ -104,11 +104,6 @@ export const CharacterSelection = ({
                               console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
                               e.target.style.display = 'none';
                             }}
-                            onLoad={() => {
-                              if (character.id === 31) {
-                                console.log(`31番画像読み込み成功: ${character.image_path}`);
-                              }
-                            }}
                           />
                         </div>
                         <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
