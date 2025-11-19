@@ -120,7 +120,7 @@ export const CharacterSelection = ({
                   <div className="flex justify-center mt-6 mb-4">
                     <button
                       onClick={() => setDisplayCount(prev => prev + LOAD_MORE_COUNT)}
-                      className="px-6 py-3 bg-white/90 hover:bg-white text-gray-800 font-bold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+                      className="px-6 py-3 bg-white/80 hover:bg-white text-gray-800 font-bold rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
                     >
                       さらに表示する ({filteredCharacters.length - displayCount}件)
                     </button>

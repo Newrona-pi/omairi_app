@@ -24,10 +24,10 @@ export const EmaDisplay = ({
 
   const buttonContainerStyle = isMobile
     ? {
-        bottom: '4%',
+        bottom: '15%',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '90%',
+        width: '85%',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.75rem',
@@ -40,6 +40,22 @@ export const EmaDisplay = ({
         flexDirection: 'column',
         gap: '1rem',
         alignItems: 'flex-end'
+      };
+
+  const purchaseButtonStyle = isMobile
+    ? {
+        top: '5%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '85%',
+        display: 'flex',
+        justifyContent: 'center'
+      }
+    : {
+        top: '5%',
+        right: '5%',
+        display: 'flex',
+        justifyContent: 'flex-end'
       };
 
   const buttonClassName = `custom-outline-btn${isMobile ? ' w-full text-base' : ''}`;
@@ -322,40 +338,54 @@ export const EmaDisplay = ({
 
       <AnimatePresence>
         {showButtons && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="absolute z-10 button-container"
-            style={buttonContainerStyle}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={handleBackToCharacterSelection}
-              className={buttonClassName}
+          <>
+            {/* 絵馬の購入はこちらからボタン（画面上部） */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="absolute z-10 button-container"
+              style={purchaseButtonStyle}
+              onClick={(e) => e.stopPropagation()}
             >
-              <span className="btn-label-highlight">推しの選択に戻る</span>
-              <span className="btn-arrow-highlight">&lt;</span>
-            </button>
-            <button
-              onClick={handleEmaClick}
-              className={buttonClassName}
+              <a
+                href="https://newrona.jp/melofinity"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonClassName}
+                style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
+              >
+                <span className="btn-label-highlight">絵馬の購入はこちらから</span>
+                <span className="btn-arrow-highlight">&gt;</span>
+              </a>
+            </motion.div>
+            {/* 推しの選択に戻る・みんなの絵馬を見るボタン（中央寄り） */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="absolute z-10 button-container"
+              style={buttonContainerStyle}
+              onClick={(e) => e.stopPropagation()}
             >
-              <span className="btn-label-highlight">みんなの絵馬を見る</span>
-              <span className="btn-arrow-highlight">&gt;</span>
-            </button>
-            <a
-              href="https://newrona.jp/melofinity"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={buttonClassName}
-              style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
-            >
-              <span className="btn-label-highlight">絵馬の購入はこちらから</span>
-              <span className="btn-arrow-highlight">&gt;</span>
-            </a>
-          </motion.div>
+              <button
+                onClick={handleBackToCharacterSelection}
+                className={buttonClassName}
+              >
+                <span className="btn-label-highlight">推しの選択に戻る</span>
+                <span className="btn-arrow-highlight">&lt;</span>
+              </button>
+              <button
+                onClick={handleEmaClick}
+                className={buttonClassName}
+              >
+                <span className="btn-label-highlight">みんなの絵馬を見る</span>
+                <span className="btn-arrow-highlight">&gt;</span>
+              </button>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </motion.div>
