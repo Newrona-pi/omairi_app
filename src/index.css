@@ -91,4 +91,155 @@ html, body, #root {
   }
 }
 
+.purchase-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(to right, #f75423, #ff6b3d, #dc2626);
+  border: none;
+  border-radius: 2rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(255, 107, 61, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  min-width: 200px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.purchase-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.purchase-btn:hover::before {
+  left: 100%;
+}
+
+.purchase-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 16px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(255, 107, 61, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(to right, #ff6b3d, #ff8555, #ef4444);
+}
+
+.purchase-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 0 15px rgba(255, 107, 61, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.purchase-btn-label {
+  flex-grow: 1;
+  text-align: left;
+  margin-right: 1rem;
+}
+
+.purchase-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.purchase-btn-arrow {
+  color: #f75423;
+  font-size: 0.875rem;
+  font-weight: bold;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .purchase-btn {
+    width: 100%;
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    min-width: auto;
+  }
+
+  .purchase-btn-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .purchase-btn-arrow {
+    font-size: 0.875rem;
+  }
+}
+
+/* キャラクターカードのホバーエフェクト */
+.character-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.character-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.6s ease, opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.character-card:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(255, 107, 61, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.character-card:hover::before {
+  left: 100%;
+  opacity: 1;
+}
+
+.character-card-content {
+  position: relative;
+  z-index: 0;
+}
+
 

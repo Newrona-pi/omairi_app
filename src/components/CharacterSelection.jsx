@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { filterCharacters } from '../utils/characterUtils';
 
-const INITIAL_DISPLAY_COUNT = 10;
-const LOAD_MORE_COUNT = 10;
+const INITIAL_DISPLAY_COUNT = 20;
+const LOAD_MORE_COUNT = 20;
 
 export const CharacterSelection = ({ 
   characters, 
@@ -90,29 +90,31 @@ export const CharacterSelection = ({
                   {displayedCharacters.map((character) => (
                     <div
                       key={character.id}
-                      className="bg-white/80 rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer transform hover:scale-105 transition-transform duration-300 flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
+                      className="character-card bg-white/80 rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
                       onClick={() => handleCharacterSelect(character)}
                     >
-                      <div className="w-full h-4/5 flex items-center justify-center mb-3">
-                        <img
-                          src={character.image_path}
-                          alt={character.name}
-                          className="h-full w-full object-contain"
-                          loading="lazy"
-                          onError={(e) => {
-                            console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
-                            e.target.style.display = 'none';
-                          }}
-                          onLoad={() => {
-                            if (character.id === 31) {
-                              console.log(`31番画像読み込み成功: ${character.image_path}`);
-                            }
-                          }}
-                        />
+                      <div className="character-card-content w-full h-full flex flex-col">
+                        <div className="w-full h-4/5 flex items-center justify-center mb-3">
+                          <img
+                            src={character.image_path}
+                            alt={character.name}
+                            className="h-full w-full object-contain"
+                            loading="lazy"
+                            onError={(e) => {
+                              console.error(`画像の読み込みに失敗: ${character.name} (${character.image_path})`);
+                              e.target.style.display = 'none';
+                            }}
+                            onLoad={() => {
+                              if (character.id === 31) {
+                                console.log(`31番画像読み込み成功: ${character.image_path}`);
+                              }
+                            }}
+                          />
+                        </div>
+                        <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
+                          {character.name}
+                        </p>
                       </div>
-                      <p className="text-center text-xs sm:text-sm font-bold text-gray-800 mb-1">
-                        {character.name}
-                      </p>
                     </div>
                   ))}
                 </div>

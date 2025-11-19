@@ -24,17 +24,17 @@ export const EmaDisplay = ({
 
   const buttonContainerStyle = isMobile
     ? {
-        bottom: '15%',
-        left: '50%',
+        bottom: '10%',
+        left: '18%',
         transform: 'translateX(-50%)',
-        width: '85%',
+        width: '65%',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.75rem',
         alignItems: 'stretch'
       }
     : {
-        top: '5%',
+        top: '15%',
         right: '5%',
         display: 'flex',
         flexDirection: 'column',
@@ -45,9 +45,9 @@ export const EmaDisplay = ({
   const purchaseButtonStyle = isMobile
     ? {
         top: '5%',
-        left: '50%',
+        left: '38%',
         transform: 'translateX(-50%)',
-        width: '85%',
+        width: '60%',
         display: 'flex',
         justifyContent: 'center'
       }
@@ -353,11 +353,12 @@ export const EmaDisplay = ({
                 href="https://newrona.jp/melofinity"
                 target="_blank"
                 rel="noopener noreferrer"
-                className={buttonClassName}
-                style={{ textDecoration: 'none', textShadow: '0 0 3px #fff, 0 0 3px #fff' }}
+                className="purchase-btn"
               >
-                <span className="btn-label-highlight">絵馬の購入はこちらから</span>
-                <span className="btn-arrow-highlight">&gt;</span>
+                <span className="purchase-btn-label">絵馬の購入はこちらから</span>
+                <span className="purchase-btn-icon">
+                  <span className="purchase-btn-arrow">▶</span>
+                </span>
               </a>
             </motion.div>
             {/* 推しの選択に戻る・みんなの絵馬を見るボタン（中央寄り） */}

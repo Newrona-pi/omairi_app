@@ -5,8 +5,8 @@ import { db } from '../firebase';
 import { insertLineBreaks } from '../utils/emaUtils';
 import { useEmaImageSize } from '../hooks/useEmaImageSize';
 
-const INITIAL_DISPLAY_COUNT = 10;
-const LOAD_MORE_COUNT = 10;
+const INITIAL_DISPLAY_COUNT = 20;
+const LOAD_MORE_COUNT = 20;
 
 export const AllEmas = ({
   emas,
