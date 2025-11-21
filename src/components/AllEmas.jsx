@@ -646,8 +646,8 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
 
   // デバイスタイプの判定: スマホ / タブレット（iPad） / デスクトップ
   // 画面幅とアスペクト比の両方を考慮して判定
-  // タブレット判定: 640px以上1024px未満で、アスペクト比が0.8以下（iPad mini、iPad Airなど）
-  const isTablet = !isMobile && screenWidth >= 640 && screenWidth < 1024 && screenAspectRatio <= 0.8;
+  // iPad Pro 12.9インチ（1024px）まで対応するため、画面幅の上限を1400pxに設定
+  const isTablet = !isMobile && screenWidth >= 640 && screenWidth < 1400 && screenAspectRatio <= 0.85;
   // デスクトップ判定: それ以外の非モバイル（横長画面）
   const isDesktop = !isMobile && !isTablet;
 
@@ -812,7 +812,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                   ...(isMobile
                     ? {
                         // スマホ用（既存の配置を維持）
-                        top: '43%',
+                        top: '40%',
                         left: '44%',
                         transform: 'translate(-50%, -50%) translateZ(0)',
                         width: '70%',
@@ -952,10 +952,10 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       if (isPortrait) {
                         // 縦長画像用の配置
                         return {
-                          bottom: '30%',
-                          right: '12%',
-                          width: '32%',
-                          height: '35%',
+                          bottom: '29%',
+                          right: '11%',
+                          width: '40%',
+                          height: '38%',
                           overflow: 'hidden',
                           display: 'flex',
                           alignItems: 'flex-end',
@@ -966,9 +966,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                         // 横長画像用の配置
                         return {
                           bottom: '30%',
-                          right: '12%',
-                          width: '40%',
-                          height: '25%',
+                          right: '8%',
+                          width: '48%',
+                          height: '38%',
                           overflow: 'hidden',
                           display: 'flex',
                           alignItems: 'flex-end',
@@ -994,9 +994,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       if (isPortrait) {
                         // 縦長画像用の配置
                         return {
-                          bottom: '28%',
-                          right: '16%',
-                          width: '30%',
+                          bottom: '25%',
+                          right: '12%',
+                          width: '34%',
                           height: '45%',
                           overflow: 'hidden',
                           display: 'flex',
@@ -1007,9 +1007,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       } else if (isLandscape) {
                         // 横長画像用の配置
                         return {
-                          bottom: '28%',
-                          right: '14%',
-                          width: '38%',
+                          bottom: '25%',
+                          right: '10%',
+                          width: '42%',
                           height: '32%',
                           overflow: 'hidden',
                           display: 'flex',
@@ -1051,7 +1051,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                         return {
                           bottom: '22%',
                           right: '18%',
-                          width: '43%',
+                          width: '40%',
                           height: '48%',
                           overflow: 'hidden',
                           display: 'flex',
