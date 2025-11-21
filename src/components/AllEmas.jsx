@@ -838,7 +838,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       willChange: 'transform',
                       transform: 'translateZ(0)'
                     }}
-                    loading="lazy"
+                    loading="eager"
                     onLoad={(e) => {
                       // 画像のアスペクト比を判定
                       const img = e.target;
