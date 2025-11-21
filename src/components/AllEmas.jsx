@@ -22,6 +22,39 @@ export const AllEmas = ({
   setExpandedEma,
   isMobile
 }) => {
+  const [screenAspectRatio, setScreenAspectRatio] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth / window.innerHeight;
+    }
+    return 1;
+  });
+  const [screenWidth, setScreenWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+    return 0;
+  });
+
+  // 画面のアスペクト比と幅を監視（iPad判定用）
+  useEffect(() => {
+    const updateScreenSize = () => {
+      if (typeof window !== 'undefined') {
+        setScreenWidth(window.innerWidth);
+        setScreenAspectRatio(window.innerWidth / window.innerHeight);
+      }
+    };
+    
+    window.addEventListener('resize', updateScreenSize);
+    updateScreenSize();
+    
+    return () => {
+      window.removeEventListener('resize', updateScreenSize);
+    };
+  }, []);
+
+  // タブレット判定: iPad mini, Air, Proなど
+  const isTablet = !isMobile && screenWidth >= 640 && screenWidth < 1400 && screenAspectRatio <= 0.85;
+
   const allEmaList = [...emas].sort((a, b) => {
     if (sortByLikes) {
       return (b.likes || 0) - (a.likes || 0);
@@ -111,9 +144,9 @@ export const AllEmas = ({
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${isTablet ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-x-4 gap-y-0.05 max-w-7xl mx-auto`}>
           {allEmaList.length === 0 ? (
-            <div className="col-span-4 text-center text-white text-xl py-8">
+            <div className={`${isTablet ? 'col-span-2' : 'col-span-4'} text-center text-white text-xl py-8`}>
               まだ絵馬が投稿されていません。<br />
               最初の絵馬を書いてみませんか？
             </div>
@@ -159,8 +192,42 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
   const [characterImageAspectRatio, setCharacterImageAspectRatio] = useState(null);
   const [characterImageLoaded, setCharacterImageLoaded] = useState(false);
   const [emaImageLoaded, setEmaImageLoaded] = useState(false);
+  const [screenAspectRatio, setScreenAspectRatio] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth / window.innerHeight;
+    }
+    return 1;
+  });
+  const [screenWidth, setScreenWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+    return 0;
+  });
 
   const characterImageRef = useRef(null);
+
+  // 画面のアスペクト比と幅を監視（iPad判定用）
+  useEffect(() => {
+    const updateScreenSize = () => {
+      if (typeof window !== 'undefined') {
+        setScreenWidth(window.innerWidth);
+        setScreenAspectRatio(window.innerWidth / window.innerHeight);
+      }
+    };
+    
+    window.addEventListener('resize', updateScreenSize);
+    updateScreenSize();
+    
+    return () => {
+      window.removeEventListener('resize', updateScreenSize);
+    };
+  }, []);
+
+  // デバイスタイプの判定: スマホ / タブレット（iPad） / デスクトップ
+  // iPad Pro 12.9インチ（1024px）まで対応するため、画面幅の上限を1400pxに設定
+  const isTablet = !isMobile && screenWidth >= 640 && screenWidth < 1400 && screenAspectRatio <= 0.85;
+  const isDesktop = !isMobile && !isTablet;
 
   useEffect(() => {
     setCharacterImageAspectRatio(null);
@@ -209,15 +276,43 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
   }, []);
 
   const getWishFontSize = () => {
-    if (emaImageSize.width === 0) return isMobile ? '0.95rem' : '1rem';
-    const baseSize = isMobile ? emaImageSize.width * 0.038 : emaImageSize.width * 0.042;
-    return `${Math.max(10, Math.min(baseSize, isMobile ? 24 : 28))}px`;
+    if (emaImageSize.width === 0) {
+      if (isMobile) return '0.95rem';
+      if (isTablet) return '0.98rem';
+      return '1rem';
+    }
+    let baseSize, maxSize;
+    if (isMobile) {
+      baseSize = emaImageSize.width * 0.038;
+      maxSize = 24;
+    } else if (isTablet) {
+      baseSize = emaImageSize.width * 0.04;
+      maxSize = 26;
+    } else {
+      baseSize = emaImageSize.width * 0.042;
+      maxSize = 28;
+    }
+    return `${Math.max(10, Math.min(baseSize, maxSize))}px`;
   };
 
   const getNameFontSize = () => {
-    if (emaImageSize.width === 0) return isMobile ? '0.9rem' : '0.95rem';
-    const baseSize = isMobile ? emaImageSize.width * 0.028 : emaImageSize.width * 0.03;
-    return `${Math.max(10, Math.min(baseSize, isMobile ? 28 : 24))}px`;
+    if (emaImageSize.width === 0) {
+      if (isMobile) return '0.9rem';
+      if (isTablet) return '0.93rem';
+      return '0.95rem';
+    }
+    let baseSize, maxSize;
+    if (isMobile) {
+      baseSize = emaImageSize.width * 0.028;
+      maxSize = 28;
+    } else if (isTablet) {
+      baseSize = emaImageSize.width * 0.029;
+      maxSize = 26;
+    } else {
+      baseSize = emaImageSize.width * 0.03;
+      maxSize = 24;
+    }
+    return `${Math.max(10, Math.min(baseSize, maxSize))}px`;
   };
 
   // キャラクター画像コンテナのレイアウトを縦横比ごとに切り替え
@@ -226,11 +321,12 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
     const isLandscape = characterImageAspectRatio === false;
 
     if (isMobile) {
+      // スマホ用（既存の配置を維持）
       if (isPortrait) {
         // モバイル: 縦長キャラ画像
         return {
-          bottom: '18%',
-          right: '7%',
+          bottom: '22%',
+          right: '8%',
           width: '36%',
           height: '39%',
           overflow: 'hidden',
@@ -242,8 +338,8 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
       } else if (isLandscape) {
         // モバイル: 横長キャラ画像
         return {
-          bottom: '18%',
-          right: '5%',
+          bottom: '22%',
+          right: '7%',
           width: '44%',
           height: '29%',
           overflow: 'hidden',
@@ -264,11 +360,52 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
         justifyContent: 'center',
         flexShrink: 0
       };
+    } else if (isTablet) {
+      // タブレット（iPad縦向きなど）用
+      if (isPortrait) {
+        // タブレット: 縦長キャラ画像
+        return {
+          bottom: '22%',
+          right: '11%',
+          width: '30%',
+          height: '50%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          flexShrink: 0
+        };
+      } else if (isLandscape) {
+        // タブレット: 横長キャラ画像
+        return {
+          bottom: '22%',
+          right: '7%',
+          width: '38%',
+          height: '35%',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          flexShrink: 0
+        };
+      }
+      return {
+        bottom: '10%',
+        right: '9%',
+        width: '30%',
+        height: '50%',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        flexShrink: 0
+      };
     } else {
+      // デスクトップ用（既存の配置を維持）
       if (isPortrait) {
         // デスクトップ: 縦長キャラ画像
         return {
-          bottom: '1%',
+          bottom: '23%',
           right: '12%',
           width: '25%',
           height: '60%',
@@ -281,7 +418,7 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
       } else if (isLandscape) {
         // デスクトップ: 横長キャラ画像
         return {
-          bottom: '2%',
+          bottom: '23%',
           right: '10%',
           width: '35%',
           height: '40%',
@@ -310,12 +447,15 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
     <div
       className="relative transform hover:scale-105 transition-transform duration-300 bg-transparent cursor-pointer"
       onClick={() => setExpandedEma(ema)}
+      style={{
+        aspectRatio: '0.9'
+      }}
     >
       <img
         ref={emaImageRef}
         src="assets/ema-transparent.png"
         alt="絵馬"
-        className="w-full h-48 object-cover rounded-md bg-transparent"
+        className="w-full h-full object-contain rounded-md bg-transparent"
         style={{ 
           backgroundColor: 'transparent',
           willChange: 'transform',
@@ -330,10 +470,10 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
           <div
             className="absolute z-10"
             style={{
-              top: isMobile ? '47%' : '57%',
+              top: isMobile ? '52%' : isTablet ? '53%' : '53%',
               left: '50%',
               transform: 'translate(-50%, -50%) translateZ(0)',
-              width: isMobile ? '72%' : '75%',
+              width: isMobile ? '72%' : isTablet ? '73%' : '75%',
               height: '28%',
               overflow: 'hidden',
               display: 'flex',
@@ -363,9 +503,9 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
           <div
             className="absolute z-10"
             style={{
-              bottom: isMobile ? '23%' : '12%',
-              right: isMobile ? '30%' : '38%',
-              width: isMobile ? '55%' : '45%',
+              bottom: isMobile ? '25%' : isTablet ? '26%' : '26%',
+              right: isMobile ? '30%' : isTablet ? '34%' : '38%',
+              width: isMobile ? '55%' : isTablet ? '50%' : '45%',
               height: '6%',
               overflow: 'hidden',
               display: 'flex',
@@ -436,31 +576,15 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
               />
             </div>
           )}
-          {!isMobile && (
-            <button
-              type="button"
-              className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
-              style={{ bottom: '8%', left: '0.1%' }}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLike(ema.id);
-              }}
-              disabled={likedSet.has(ema.id)}
-              aria-label="いいね"
-            >
-              <span role="img" aria-label="like">
-                ❤️
-              </span>
-              {ema.likes || 0}
-            </button>
-          )}
-        </div>
-      )}
-      {isMobile && (
-        <div className="flex justify-center mt-2" onClick={(e) => e.stopPropagation()}>
+          {/* いいねボタン（全デバイス共通でカード内に配置） */}
           <button
             type="button"
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition"
+            className="absolute flex items-center gap-1 px-2 py-1 rounded-full bg-white bg-opacity-80 shadow text-pink-600 text-sm font-bold pointer-events-auto hover:bg-pink-100 transition z-20"
+            style={{ 
+              bottom: isMobile ? '12%' : isTablet ? '24%' : '24%', 
+              left: isMobile ? '50%' : isTablet ? '1%' : '0.1%',
+              transform: isMobile ? 'translateX(-50%)' : 'none'
+            }}
             onClick={(e) => {
               e.stopPropagation();
               handleLike(ema.id);
@@ -490,6 +614,42 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
   const [characterImageAspectRatio, setCharacterImageAspectRatio] = useState(null); // null: 未判定, true: 縦長, false: 横長
   const [characterImageLoaded, setCharacterImageLoaded] = useState(false);
   const [emaImageLoaded, setEmaImageLoaded] = useState(false);
+  const [screenAspectRatio, setScreenAspectRatio] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth / window.innerHeight;
+    }
+    return 1;
+  });
+  const [screenWidth, setScreenWidth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth;
+    }
+    return 0;
+  });
+
+  // 画面のアスペクト比と幅を監視（iPad判定用）
+  useEffect(() => {
+    const updateScreenSize = () => {
+      if (typeof window !== 'undefined') {
+        setScreenWidth(window.innerWidth);
+        setScreenAspectRatio(window.innerWidth / window.innerHeight);
+      }
+    };
+    
+    window.addEventListener('resize', updateScreenSize);
+    updateScreenSize();
+    
+    return () => {
+      window.removeEventListener('resize', updateScreenSize);
+    };
+  }, []);
+
+  // デバイスタイプの判定: スマホ / タブレット（iPad） / デスクトップ
+  // 画面幅とアスペクト比の両方を考慮して判定
+  // タブレット判定: 640px以上1024px未満で、アスペクト比が0.8以下（iPad mini、iPad Airなど）
+  const isTablet = !isMobile && screenWidth >= 640 && screenWidth < 1024 && screenAspectRatio <= 0.8;
+  // デスクトップ判定: それ以外の非モバイル（横長画面）
+  const isDesktop = !isMobile && !isTablet;
 
   // 拡大表示する絵馬が変更された時にアスペクト比をリセット
   useEffect(() => {
@@ -566,15 +726,35 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
   const getWishFontSize = () => {
     if (emaImageSize.width === 0) return '1rem';
     // 自分の絵馬より一段大きく表示して読みやすさを確保
-    const baseSize = isMobile ? emaImageSize.width * 0.042 : emaImageSize.width * 0.04;
-    return `${Math.max(12, Math.min(baseSize, isMobile ? 36 : 44))}px`;
+    let baseSize, maxSize;
+    if (isMobile) {
+      baseSize = emaImageSize.width * 0.042;
+      maxSize = 36;
+    } else if (isTablet) {
+      baseSize = emaImageSize.width * 0.041;
+      maxSize = 40;
+    } else {
+      baseSize = emaImageSize.width * 0.04;
+      maxSize = 44;
+    }
+    return `${Math.max(12, Math.min(baseSize, maxSize))}px`;
   };
 
   const getNameFontSize = () => {
     if (emaImageSize.width === 0) return '1rem';
     // 拡大表示では名前も一段階大きくする
-    const baseSize = isMobile ? emaImageSize.width * 0.035 : emaImageSize.width * 0.028;
-    return `${Math.max(12, Math.min(baseSize, isMobile ? 52 : 38))}px`;
+    let baseSize, maxSize;
+    if (isMobile) {
+      baseSize = emaImageSize.width * 0.035;
+      maxSize = 52;
+    } else if (isTablet) {
+      baseSize = emaImageSize.width * 0.031;
+      maxSize = 42;
+    } else {
+      baseSize = emaImageSize.width * 0.028;
+      maxSize = 38;
+    }
+    return `${Math.max(12, Math.min(baseSize, maxSize))}px`;
   };
 
   return (
@@ -631,8 +811,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                 style={{
                   ...(isMobile
                     ? {
+                        // スマホ用（既存の配置を維持）
                         top: '43%',
-                        left: '45%',
+                        left: '44%',
                         transform: 'translate(-50%, -50%) translateZ(0)',
                         width: '70%',
                         height: '28%',
@@ -642,7 +823,22 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                         justifyContent: 'center',
                         flexShrink: 0
                       }
+                    : isTablet
+                    ? {
+                        // タブレット（iPad縦向きなど）用
+                        top: '44%',
+                        left: '45%',
+                        transform: 'translate(-50%, -50%) translateZ(0)',
+                        width: '55%',
+                        height: '29%',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }
                     : {
+                        // デスクトップ用（既存の配置を維持）
                         top: '48%',
                         left: '37%',
                         transform: 'translate(-50%, -50%) translateZ(0)',
@@ -681,6 +877,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                 style={{
                   ...(isMobile
                     ? {
+                        // スマホ用（既存の配置を維持）
                         bottom: '35%',
                         right: '34%',
                         width: '60%',
@@ -691,7 +888,21 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                         justifyContent: 'flex-start',
                         flexShrink: 0
                       }
+                    : isTablet
+                    ? {
+                        // タブレット（iPad縦向きなど）用
+                        bottom: '30%',
+                        right: '47%',
+                        width: '45%',
+                        height: '6%',
+                        overflow: 'visible',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        flexShrink: 0
+                      }
                     : {
+                        // デスクトップ用（既存の配置を維持）
                         bottom: '25%',
                         right: '70%',
                         width: '28%',
@@ -737,8 +948,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                     const isLandscape = characterImageAspectRatio === false;
                     
                     if (isMobile) {
+                      // スマホ用（既存の配置を維持）
                       if (isPortrait) {
-                        // 縦長画像用の配置（自分の絵馬画面と同じロジック）
+                        // 縦長画像用の配置
                         return {
                           bottom: '30%',
                           right: '12%',
@@ -751,7 +963,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                           flexShrink: 0
                         };
                       } else if (isLandscape) {
-                        // 横長画像用の配置（自分の絵馬画面と同じロジック）
+                        // 横長画像用の配置
                         return {
                           bottom: '30%',
                           right: '12%',
@@ -777,9 +989,52 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                           flexShrink: 0
                         };
                       }
-                    } else {
+                    } else if (isTablet) {
+                      // タブレット（iPad縦向きなど）用
                       if (isPortrait) {
-                        // 縦長画像用の配置（自分の絵馬画面と同じロジック）
+                        // 縦長画像用の配置
+                        return {
+                          bottom: '28%',
+                          right: '16%',
+                          width: '30%',
+                          height: '45%',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        };
+                      } else if (isLandscape) {
+                        // 横長画像用の配置
+                        return {
+                          bottom: '28%',
+                          right: '14%',
+                          width: '38%',
+                          height: '32%',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        };
+                      } else {
+                        // 未判定時はデフォルト（縦長想定）
+                        return {
+                          bottom: '28%',
+                          right: '16%',
+                          width: '30%',
+                          height: '45%',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'flex-end',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        };
+                      }
+                    } else {
+                      // デスクトップ用（既存の配置を維持）
+                      if (isPortrait) {
+                        // 縦長画像用の配置
                         return {
                           bottom: '22%',
                           right: '21%',
@@ -792,7 +1047,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                           flexShrink: 0
                         };
                       } else if (isLandscape) {
-                        // 横長画像用の配置（自分の絵馬画面と同じロジック）
+                        // 横長画像用の配置
                         return {
                           bottom: '22%',
                           right: '18%',
