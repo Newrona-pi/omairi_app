@@ -66,7 +66,7 @@ export const EmaDisplay = ({
   const getWishFontSize = () => {
     if (emaImageSize.width === 0) return '1rem';
     // 絵馬画像の幅に対して相対的に計算（スマホ: 約2.6%, デスクトップ: 約3.2%）
-    const baseSize = isMobile ? emaImageSize.width * 0.026 : emaImageSize.width * 0.032;
+    const baseSize = isMobile ? emaImageSize.width * 0.038 : emaImageSize.width * 0.032;
     // 最小値と最大値を設定
     return `${Math.max(12, Math.min(baseSize, isMobile ? 32 : 40))}px`;
   };
@@ -101,7 +101,7 @@ export const EmaDisplay = ({
       <div className="absolute inset-0 flex items-center justify-center z-0">
         <img 
           ref={emaImageRef}
-          src={isMobile ? "assets/ema-portrait.png" : "assets/ema1105-2.png"} 
+          src={isMobile ? "assets/ema_vertical_braided.png" : "assets/ema-transparent.png"} 
           alt="Ema" 
           className="max-w-full max-h-full w-auto h-auto"
           style={{ objectFit: 'contain' }}
@@ -125,7 +125,7 @@ export const EmaDisplay = ({
             style={{
               ...(isMobile
                 ? {
-                    top: '61%',
+                    top: '57%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: '70%',
@@ -137,7 +137,7 @@ export const EmaDisplay = ({
                     flexShrink: 0
                   }
                 : {
-                    top: '55%',
+                    top: '53%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: '41.67%',
@@ -174,8 +174,8 @@ export const EmaDisplay = ({
             style={{
               ...(isMobile
                 ? {
-                    bottom: '25%',
-                    right: '24%',
+                    bottom: '26%',
+                    right: '25%',
                     width: '55%',
                     height: '6%',
                     overflow: 'hidden',
@@ -185,8 +185,8 @@ export const EmaDisplay = ({
                     flexShrink: 0
                   }
                 : {
-                    bottom: '20%',
-                    right: '52%',
+                    bottom: '22%',
+                    right: '58%',
                     width: '23%',
                     height: '5%',
                     overflow: 'hidden',
@@ -232,8 +232,8 @@ export const EmaDisplay = ({
                     // 縦長画像用の配置
                     return {
                       bottom: '24%',
-                      right: '14%',
-                      width: '32%',
+                      right: '12%',
+                      width: '26%',
                       height: '35%',
                       overflow: 'hidden',
                       display: 'flex',
@@ -244,9 +244,9 @@ export const EmaDisplay = ({
                   } else if (isLandscape) {
                     // 横長画像用の配置
                     return {
-                      bottom: '24%',
-                      right: '14%',
-                      width: '40%',
+                      bottom: '25%',
+                      right: '10%',
+                      width: '38%',
                       height: '25%',
                       overflow: 'hidden',
                       display: 'flex',
@@ -272,9 +272,9 @@ export const EmaDisplay = ({
                   if (isPortrait) {
                     // 縦長画像用の配置
                     return {
-                      bottom: '18%',
-                      right: '23%',
-                      width: '25%',
+                      bottom: '19%',
+                      right: '10%',
+                      width: '30%',
                       height: '60%',
                       overflow: 'hidden',
                       display: 'flex',
@@ -285,9 +285,9 @@ export const EmaDisplay = ({
                   } else if (isLandscape) {
                     // 横長画像用の配置
                     return {
-                      bottom: '15%',
-                      right: '21.5%',
-                      width: '35%',
+                      bottom: '19%',
+                      right: '8%',
+                      width: '37%',
                       height: '40%',
                       overflow: 'hidden',
                       display: 'flex',
