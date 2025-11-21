@@ -86,11 +86,11 @@ export const CharacterSelection = ({
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 max-w-6xl mx-auto justify-items-center">
                   {displayedCharacters.map((character) => (
                     <div
                       key={character.id}
-                      className="character-card bg-white/80 rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-32 sm:w-36 md:w-44"
+                      className="character-card bg-white/80 rounded-lg shadow-lg p-2 sm:p-3 md:p-4 cursor-pointer flex flex-col items-center aspect-[3/4] h-48 sm:h-56 md:h-64 w-full max-w-[8rem] sm:max-w-[9rem] md:max-w-[11rem]"
                       onClick={() => handleCharacterSelect(character)}
                     >
                       <div className="character-card-content w-full h-full flex flex-col">

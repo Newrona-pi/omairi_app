@@ -483,6 +483,7 @@ const EmaListCard = ({ ema, isMobile, setExpandedEma, handleLike, likedSet }) =>
 const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
   const emaImageRef = useRef(null);
   const modalContainerRef = useRef(null);
+  const characterImageRef = useRef(null);
   // 拡大表示モーダルの場合はstepを7に設定（6以上であれば動作する）
   const emaImageSize = useEmaImageSize(emaImageRef, expandedEma ? 7 : 0);
   const [forceUpdate, setForceUpdate] = useState(0);
@@ -495,7 +496,42 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
     setCharacterImageAspectRatio(null);
     setCharacterImageLoaded(false);
     setEmaImageLoaded(false);
+    
+    // キャラクター画像が既に読み込まれている場合（キャッシュなど）をチェック
+    // 少し遅延させて、refが設定された後にチェック
+    const checkImageLoaded = setTimeout(() => {
+      if (characterImageRef.current?.complete) {
+        const img = characterImageRef.current;
+        if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+          const aspectRatio = img.naturalHeight / img.naturalWidth;
+          setCharacterImageAspectRatio(aspectRatio > 1);
+          setCharacterImageLoaded(true);
+        }
+      }
+    }, 100);
+    
+    return () => clearTimeout(checkImageLoaded);
   }, [expandedEma?.character?.id, expandedEma?.id]);
+
+  // 画像読み込みタイムアウト: 3秒後に表示を試みる
+  useEffect(() => {
+    if (!characterImageLoaded && expandedEma?.character) {
+      const timer = setTimeout(() => {
+        if (!characterImageLoaded && characterImageRef.current) {
+          const img = characterImageRef.current;
+          if (img.complete && img.naturalWidth > 0) {
+            const aspectRatio = img.naturalHeight / img.naturalWidth;
+            setCharacterImageAspectRatio(aspectRatio > 1);
+            setCharacterImageLoaded(true);
+          } else {
+            // タイムアウト後も読み込まれていない場合は表示を試みる
+            setCharacterImageLoaded(true);
+          }
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [characterImageLoaded, expandedEma?.character?.id]);
 
   useEffect(() => {
     if (emaImageRef.current?.complete) {
@@ -530,7 +566,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
   const getWishFontSize = () => {
     if (emaImageSize.width === 0) return '1rem';
     // 自分の絵馬より一段大きく表示して読みやすさを確保
-    const baseSize = isMobile ? emaImageSize.width * 0.032 : emaImageSize.width * 0.04;
+    const baseSize = isMobile ? emaImageSize.width * 0.042 : emaImageSize.width * 0.04;
     return `${Math.max(12, Math.min(baseSize, isMobile ? 36 : 44))}px`;
   };
 
@@ -595,8 +631,8 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                 style={{
                   ...(isMobile
                     ? {
-                        top: '61%',
-                        left: '50%',
+                        top: '43%',
+                        left: '45%',
                         transform: 'translate(-50%, -50%) translateZ(0)',
                         width: '70%',
                         height: '28%',
@@ -645,8 +681,8 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                 style={{
                   ...(isMobile
                     ? {
-                        bottom: '25%',
-                        right: '24%',
+                        bottom: '35%',
+                        right: '34%',
                         width: '60%',
                         height: '6%',
                         overflow: 'visible',
@@ -704,8 +740,8 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       if (isPortrait) {
                         // 縦長画像用の配置（自分の絵馬画面と同じロジック）
                         return {
-                          bottom: '24%',
-                          right: '14%',
+                          bottom: '30%',
+                          right: '12%',
                           width: '32%',
                           height: '35%',
                           overflow: 'hidden',
@@ -717,8 +753,8 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       } else if (isLandscape) {
                         // 横長画像用の配置（自分の絵馬画面と同じロジック）
                         return {
-                          bottom: '24%',
-                          right: '14%',
+                          bottom: '30%',
+                          right: '12%',
                           width: '40%',
                           height: '25%',
                           overflow: 'hidden',
@@ -790,6 +826,7 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                 }}
                 >
                   <img
+                    ref={characterImageRef}
                     src={expandedEma.character.image_path}
                     alt={expandedEma.character.name}
                     style={{
@@ -808,6 +845,9 @@ const ExpandedEmaModal = ({ expandedEma, setExpandedEma, isMobile }) => {
                       if (img.naturalWidth > 0 && img.naturalHeight > 0) {
                         const aspectRatio = img.naturalHeight / img.naturalWidth;
                         setCharacterImageAspectRatio(aspectRatio > 1); // true: 縦長, false: 横長
+                        setCharacterImageLoaded(true);
+                      } else {
+                        // 画像サイズが取得できない場合でも表示
                         setCharacterImageLoaded(true);
                       }
                     }}

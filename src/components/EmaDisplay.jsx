@@ -357,7 +357,7 @@ export const EmaDisplay = ({
                 rel="noopener noreferrer"
                 className="purchase-btn"
               >
-                <span className="purchase-btn-label">絵馬の購入はこちらから</span>
+                <span className="purchase-btn-label">絵馬の購入はこちら</span>
                 <span className="purchase-btn-icon">
                   <span className="purchase-btn-arrow">▶</span>
                 </span>
